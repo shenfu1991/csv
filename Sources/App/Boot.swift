@@ -16,8 +16,10 @@ var pathIdx = 0
 var sbIdx = 0
 
 let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
-let itArr = ["3m","5m","15m","30m","1h","4h"]
+//let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
+//let itArr = ["3m","5m","15m","30m"]
+let pathArr = ["3m","5m","15m","30m"]
+let itArr = ["3m","5m","15m","30m"]
 
 
 class CoreViewController {
@@ -74,7 +76,7 @@ class CoreViewController {
 //            debugPrint("row=\(rows)")
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
-            let limit = 900
+            let limit = 1800
             var lc = 0
             var sc = 0
             var lnc = 0
@@ -174,22 +176,53 @@ class CoreViewController {
         //            }
         //        }
         
-        let maxT = values.max() ?? 0
-        let minT = values.min() ?? 0
+//        let maxT = values.max() ?? 0
+//        let minT = values.min() ?? 0
         
-        let v = 0.0125
+        let r = 0.0125*2
+        var lc = 0
+        var sc = 0
+        var lnc = 0
+        var snc = 0
+        for v in values {
+            if v > current {
+                if (v - current)/current >= r {
+                    lc += 1
+                }else{
+                    lnc += 1
+                }
+            }else{
+                if (current - v)/v >= r {
+                    sc += 1
+                }else{
+                    snc += 1
+                }
+            }
+        }
         
-        if fabs(maxT-current) > fabs(minT-current) {
-            if (maxT - current)/current >= v {
+        if lc > 0 || sc > 0 {
+            if lc > sc {
                 return "long"
             }
-            return "LN"
+            return "short"
         }else {
-            if fabs(minT - current)/current >= v {
-                return "short"
+            if lnc > snc {
+                return "LN"
             }
             return "SN"
         }
+        
+//        if fabs(maxT-current) > fabs(minT-current) {
+//            if (maxT - current)/current >= v {
+//                return "long"
+//            }
+//            return "LN"
+//        }else {
+//            if fabs(minT - current)/current >= v {
+//                return "short"
+//            }
+//            return "SN"
+//        }
         
         
         
