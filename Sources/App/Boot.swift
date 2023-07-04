@@ -16,10 +16,10 @@ var pathIdx = 0
 var sbIdx = 0
 
 let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-//let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
-//let itArr = ["3m","5m","15m","30m"]
-let pathArr = ["3m","5m","15m","30m","3mv2","5mv2","15mv2","30mv2","3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
-let itArr = ["3m","5m","15m","30m","3m","5m","15m","30m","3m","5m","15m","30m","1h","4h"]
+let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
+let itArr = ["3m","5m","15m","30m","1h","4h"]
+//let pathArr = ["3m","5m","15m","30m","3mv2","5mv2","15mv2","30mv2","3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
+//let itArr = ["3m","5m","15m","30m","3m","5m","15m","30m","3m","5m","15m","30m","1h","4h"]
 
 
 class CoreViewController {
