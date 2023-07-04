@@ -57,7 +57,7 @@ class CoreViewController {
 //        let url = home + "\(Int.random(in: 99999...1000000000)).csv"
         let url = home + sbName + "_" + itName + "_n.csv"
         csvUrl = URL(fileURLWithPath:url)
-        try? "open,high,low,rate,volume,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? "current,avg,open,high,low,rate,volume,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
@@ -106,10 +106,11 @@ class CoreViewController {
                         (dic["current"] ?? "").doubleValue()
                     }
                     
+                    let avg = (fopen + fhigh + flow + fcurrent)/4.0
                     let tag = getTag(current:fcurrent, values: foreCurrents)
                     
 //                    open,high,low,rate,volume,volatility,sharp,signal,result\n
-                    let newRow = "\(fopen.fmt()),\(fhigh.fmt()),\(flow.fmt()),\(frate.fmt()),\(fvolume.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag)\n"
+                    let newRow = "\(fopen.fmt()),\(avg.fmt()),\(fopen.fmt()),\(fhigh.fmt()),\(flow.fmt()),\(frate.fmt()),\(fvolume.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag)\n"
                     
                     addContent(text: newRow)
                     if tag == "long" {
