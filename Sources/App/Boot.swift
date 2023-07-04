@@ -63,17 +63,15 @@ class CoreViewController {
     func readCsvFiles() {
         
         do {
-            // 从main bundle中加载CSV文件
-//            ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT"]
+
             let path = "/Users/xuanyuan/Downloads/all/\(pathName)/\(sbName)_\(itName).csv"
-//            let path = "/Users/xuanyuan/Downloads/tet.csv"
+
             let csvFileUrl = URL(fileURLWithPath: path)
 
             let csvFile = try CSV<Named>(url: csvFileUrl)
             
             // 获取所有行
             let rows = csvFile.rows
-//            debugPrint("row=\(rows)")
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
@@ -154,31 +152,6 @@ class CoreViewController {
     }
     
     func getTag(current: Double,values: [Double]) ->String {
-        
-        //long,LN,short,SN,none
-        //        var currentEarnRate: Double = 0
-        //        var lc = 0
-        //        var sc = 0
-        //        var lnc = 0
-        //        var snc = 0
-        //        for v in values {
-        //            currentEarnRate = (v - current)/current
-        //            if currentEarnRate >= 0.0125 {
-        //                lc += 1
-        //            }else if currentEarnRate > 0 {
-        //                lnc += 1
-        //            } else if -currentEarnRate > 0.0125 {
-        //                sc += 1
-        //            }else if -currentEarnRate > 0 {
-        //                snc += 1
-        //            }else{
-        ////                nonec += 1
-        //            }
-        //        }
-        
-//        let maxT = values.max() ?? 0
-//        let minT = values.min() ?? 0
-        
         let r = 0.0125*2
         var lc = 0
         var sc = 0
@@ -211,38 +184,6 @@ class CoreViewController {
             }
             return "SN"
         }
-        
-//        if fabs(maxT-current) > fabs(minT-current) {
-//            if (maxT - current)/current >= v {
-//                return "long"
-//            }
-//            return "LN"
-//        }else {
-//            if fabs(minT - current)/current >= v {
-//                return "short"
-//            }
-//            return "SN"
-//        }
-        
-        
-        
-        //        if (maxT - current)/current >= v {
-        //            return "long"
-        //        }
-        
-        //        let maxV = [lc,sc,lnc,snc].max() ?? 0
-        //
-        //        if maxV == lc {
-        //            return "long"
-        //        }else if maxV == sc {
-        //            return "short"
-        //        }else if maxV == lnc {
-        //            return "LN"
-        //        }else if maxV == snc {
-        //            return "SN"
-        //        }
-        //
-        //        return "none"
     }
     
     
