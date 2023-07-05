@@ -16,10 +16,10 @@ var pathIdx = 0
 var sbIdx = 0
 
 let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
-let itArr = ["3m","5m","15m","30m","1h","4h"]
-//let pathArr = ["3m","5m","15m","30m","3mv2","5mv2","15mv2","30mv2","3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
-//let itArr = ["3m","5m","15m","30m","3m","5m","15m","30m","3m","5m","15m","30m","1h","4h"]
+//let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
+//let itArr = ["3m","5m","15m","30m","1h","4h"]
+let pathArr = ["3m","5m","15m","30m","3mv2","5mv2","15mv2","30mv2","3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
+let itArr = ["3m","5m","15m","30m","3m","5m","15m","30m","3m","5m","15m","30m","1h","4h"]
 
 
 class CoreViewController {
@@ -82,45 +82,44 @@ class CoreViewController {
             for (idx,_) in rows.enumerated() {
                 // 使用列名来访问数据
                 
-//                debugPrint("t=\(timestamp),open=\(open)")
-                
                 if idx >= limit {
-                    let arr = rows[idx-(limit-1)...idx]
                     let firstRow = rows[idx-(limit-1)]
-                    
-//                    let ftimestamp = firstRow["timestamp"]?.doubleValue()
                     let fcurrent = firstRow["current"]?.doubleValue() ?? 0
                     if fcurrent == 0 {
                         continue
                     }
-                    let fopen = firstRow["open"]?.doubleValue() ?? 0
-                    let fhigh = firstRow["high"]?.doubleValue() ?? 0
-                    let flow = firstRow["low"]?.doubleValue() ?? 0
-                    let frate = firstRow["rate"]?.doubleValue() ?? 0
-                    let fvolume = firstRow["volume"]?.doubleValue() ?? 0
-                    let fvolatility = firstRow["volatility"]?.doubleValue() ?? 0
-                    let fsharp = firstRow["sharp"]?.doubleValue() ?? 0
-                    let fsignal = firstRow["signal"]?.doubleValue() ?? 0
                     
-                    let foreCurrents = arr.map { dic in
-                        (dic["current"] ?? "").doubleValue()
-                    }
-                    
-                    let avg = (fopen + fhigh + flow + fcurrent)/4.0
-                    let tag = getTag(current:fcurrent, values: foreCurrents)
-                    
-//                    open,high,low,rate,volume,volatility,sharp,signal,result\n
-                    let newRow = "\(fopen.fmt()),\(avg.fmt()),\(fopen.fmt()),\(fhigh.fmt()),\(flow.fmt()),\(frate.fmt()),\(fvolume.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag)\n"
-                    
-                    addContent(text: newRow)
-                    if tag == "long" {
-                        lc += 1
-                    }else if tag == "short" {
-                        sc += 1
-                    }else if tag == "LN" {
-                        lnc += 1
-                    }else if tag == "SN" {
-                        snc += 1
+                    autoreleasepool {
+                        let arr = rows[idx-(limit-1)...idx]
+                        let fopen = firstRow["open"]?.doubleValue() ?? 0
+                        let fhigh = firstRow["high"]?.doubleValue() ?? 0
+                        let flow = firstRow["low"]?.doubleValue() ?? 0
+                        let frate = firstRow["rate"]?.doubleValue() ?? 0
+                        let fvolume = firstRow["volume"]?.doubleValue() ?? 0
+                        let fvolatility = firstRow["volatility"]?.doubleValue() ?? 0
+                        let fsharp = firstRow["sharp"]?.doubleValue() ?? 0
+                        let fsignal = firstRow["signal"]?.doubleValue() ?? 0
+                        
+                        let foreCurrents = arr.map { dic in
+                            (dic["current"] ?? "").doubleValue()
+                        }
+                        
+                        let avg = (fopen + fhigh + flow + fcurrent)/4.0
+                        let tag = getTag(current:fcurrent, values: foreCurrents)
+                        
+                        //                    open,high,low,rate,volume,volatility,sharp,signal,result\n
+                        let newRow = "\(fcurrent.fmt()),\(avg.fmt()),\(fopen.fmt()),\(fhigh.fmt()),\(flow.fmt()),\(frate.fmt()),\(fvolume.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag)\n"
+                        
+                        addContent(text: newRow)
+                        if tag == "long" {
+                            lc += 1
+                        }else if tag == "short" {
+                            sc += 1
+                        }else if tag == "LN" {
+                            lnc += 1
+                        }else if tag == "SN" {
+                            snc += 1
+                        }
                     }
                 }
             }
@@ -128,7 +127,6 @@ class CoreViewController {
             debugPrint("\(lc),\(lnc),\(sc),\(snc)")
             debugPrint("next file...")
             nextFile()
-//            exit(0)
         } catch let error {
             print("Error reading CSV file: \(error)")
             nextFile()
