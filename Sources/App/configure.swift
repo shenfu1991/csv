@@ -25,3 +25,5 @@ func readFile() {
     let data = try? Data(contentsOf: URL(fileURLWithPath: filepath))
     print(data)
 }
+
+
