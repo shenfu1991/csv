@@ -23,7 +23,7 @@ let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRT
 //let pathArr = ["3m","5m","15m","30m","3mv2","5mv2","15mv2","30mv2","3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
 //let itArr = ["3m","5m","15m","30m","3m","5m","15m","30m","3m","5m","15m","30m","1h","4h"]
 
-let pathArr = [""]
+let pathArr = ["15m"]
 let itArr = ["15m"]
 
 class CoreViewController {
@@ -39,7 +39,7 @@ class CoreViewController {
         
         do {
 
-            let path = "/Users/xuanyuan/Documents/GRTUSDT_15m__n.csv"
+            let path = "/Users/xuanyuan/Documents/csv/TOMOUSDT_15m_15m.csv"
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
@@ -148,7 +148,7 @@ class CoreViewController {
     
     func loadModel() {
         var file = #file.components(separatedBy: "App").first ?? ""
-        file += "/Resources/15v3.mlmodel"
+        file += "/Resources/15v5.mlmodel"
         let modelUrl = URL(fileURLWithPath: file)
         if let compiledUrl = try? MLModel.compileModel(at: modelUrl) {
             let model = try? MLModel(contentsOf: compiledUrl)
@@ -192,7 +192,7 @@ class CoreViewController {
         
         do {
 
-            let path = "/Users/xuanyuan/Downloads/ui/\(pathName)/\(sbName)_\(itName).csv"
+            let path = "/Users/xuanyuan/Downloads/all/\(pathName)/\(sbName)_\(itName).csv"
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
