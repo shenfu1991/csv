@@ -25,21 +25,54 @@ let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRT
 
 let pathArr = ["15m"]
 let itArr = ["15m"]
+//let modelArr = ["15v3","15v4","15v5","15v6","15v7","15v8","15v9","15v10"]
+let modelArr = ["rt4"]
+var modelIdx = 0
+var modelName = ""
 
 class CoreViewController {
     
     func configModels() {
 //        loopTask()
         
+        loopTest()
+    }
+    
+    func loopTest() {
+        sbName = sbArr[sbIdx]
+        modelName = modelArr[modelIdx]
         loadModel()
         testModel()
+    }
+    
+    func nextModel() {
+        sbIdx += 1
+        if sbIdx >= sbArr.count {
+            sbIdx = 0
+            modelIdx += 1
+            if modelIdx >= modelArr.count {
+                debugPrint("all finished")
+                exit(0)
+            }
+        }
+        loopTest()
+    }
+    
+    func loadModel() {
+        var file = #file.components(separatedBy: "App").first ?? ""
+        file += "/Resources/\(modelName).mlmodel"
+        let modelUrl = URL(fileURLWithPath: file)
+        if let compiledUrl = try? MLModel.compileModel(at: modelUrl) {
+            let model = try? MLModel(contentsOf: compiledUrl)
+            gModel = model
+        }
     }
     
     func testModel() {
         
         do {
 
-            let path = "/Users/xuanyuan/Documents/csv/TOMOUSDT_15m_15m.csv"
+            let path = "/Users/xuanyuan/Documents/validation/\(sbName)_15m_15m.csv"
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
@@ -47,6 +80,12 @@ class CoreViewController {
             
             // 获取所有行
             let rows = csvFile.rows
+            
+            if rows.isEmpty {
+                debugPrint("无数据，next...")
+                nextModel()
+                return
+            }
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             var lc = 0
@@ -117,14 +156,14 @@ class CoreViewController {
                     }
                 }
             
-            debugPrint("测试完毕。。。")
+            debugPrint("\(modelName) \(sbName)")
             debugPrint("long acc: \((Double(blc)/Double(lc)).str2F()),all count: \(lc)")
             debugPrint("short acc: \((Double(bsc)/Double(sc)).str2F()),all count: \(sc)")
             debugPrint("LN acc: \((Double(blnc)/Double(lnc)).str2F()),all count: \(lnc)")
             debugPrint("SN acc: \((Double(bsnc)/Double(snc)).str2F()),all count: \(snc)")
             debugPrint("all \(lc+sc+lnc+snc)")
-            exit(0)
-            
+           
+            nextModel()
          
         } catch let error {
            
@@ -146,15 +185,7 @@ class CoreViewController {
         return ""
     }
     
-    func loadModel() {
-        var file = #file.components(separatedBy: "App").first ?? ""
-        file += "/Resources/15v5.mlmodel"
-        let modelUrl = URL(fileURLWithPath: file)
-        if let compiledUrl = try? MLModel.compileModel(at: modelUrl) {
-            let model = try? MLModel(contentsOf: compiledUrl)
-            gModel = model
-        }
-    }
+  
     
     func loopTask() {
         
