@@ -33,9 +33,9 @@ var modelName = ""
 class CoreViewController {
     
     func configModels() {
-//        loopTask()
+        loopTask()
         
-        loopTest()
+//        loopTest()
     }
     
     func loopTest() {
@@ -310,38 +310,71 @@ class CoreViewController {
     }
     
     func getTag(current: Double,values: [Double]) ->String {
-        let r = 0.0125*2
+        let r = current > 100 ? 0.0125 : 0.0125*2
         var lc = 0
         var sc = 0
         var lnc = 0
         var snc = 0
-        for v in values {
-            if v > current {
-                if (v - current)/current >= r {
-                    lc += 1
-                }else{
-                    lnc += 1
-                }
-            }else{
-                if (current - v)/v >= r {
-                    sc += 1
-                }else{
-                    snc += 1
-                }
-            }
-        }
         
-        if lc > 0 || sc > 0 {
-            if lc > sc {
-                return "long"
-            }
-            return "short"
-        }else {
-            if lnc > snc {
-                return "LN"
+        let minX = values.min() ?? 0
+        let maxX = values.max() ?? 0
+        let sub1 = fabs(maxX - current)
+        let sub2 = fabs(minX - current)
+        
+        if current > maxX && current > minX  {
+            if (current - minX)/minX >= r {
+                return "short"
             }
             return "SN"
+        }else if current < maxX && current > minX  {
+            if sub1 > sub2 {
+                if (maxX - current)/current >= r {
+                    return "long"
+                }
+                return "LN"
+            }else{
+                if (current - minX)/minX >= r {
+                    return "short"
+                }
+                return "SN"
+            }
+        }else if current < maxX && current < minX  {
+            if (maxX - current)/current >= r {
+                return "long"
+            }
+            return "LN"
         }
+        
+        
+//        for v in values {
+//            if v > current {
+//                if (v - current)/current >= r {
+//                    lc += 1
+//                }else{
+//                    lnc += 1
+//                }
+//            }else{
+//                if (current - v)/v >= r {
+//                    sc += 1
+//                }else{
+//                    snc += 1
+//                }
+//            }
+//        }
+//
+//        if lc > 0 || sc > 0 {
+//            if lc > sc {
+//                return "long"
+//            }
+//            return "short"
+//        }else {
+//            if lnc > snc {
+//                return "LN"
+//            }
+//            return "SN"
+//        }
+        
+        return ""
     }
     
     
