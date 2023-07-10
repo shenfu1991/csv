@@ -269,7 +269,9 @@ class CoreViewController {
                         //                    open,high,low,rate,volume,volatility,sharp,signal,result\n
                         let newRow = "\(fcurrent.fmt()),\(avg.fmt()),\(fopen.fmt()),\(fhigh.fmt()),\(flow.fmt()),\(frate.fmt()),\(fvolume.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag)\n"
                         
-                        addContent(text: newRow)
+                        if tag != "" {
+                            addContent(text: newRow)
+                        }
                         if tag == "long" {
                             lc += 1
                         }else if tag == "short" {
@@ -321,12 +323,12 @@ class CoreViewController {
         let sub1 = fabs(maxX - current)
         let sub2 = fabs(minX - current)
         
-        if current > maxX && current > minX  {
+        if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
                 return "short"
             }
             return "SN"
-        }else if current < maxX && current > minX  {
+        }else if current <= maxX && current >= minX  {
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
                     return "long"
@@ -338,7 +340,7 @@ class CoreViewController {
                 }
                 return "SN"
             }
-        }else if current < maxX && current < minX  {
+        }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
                 return "long"
             }
@@ -374,7 +376,7 @@ class CoreViewController {
 //            return "SN"
 //        }
         
-        return "LN"
+        return ""
     }
     
     
