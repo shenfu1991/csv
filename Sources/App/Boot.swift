@@ -374,7 +374,7 @@ class CoreViewController {
 //            return "SN"
 //        }
         
-        return ""
+        return "LN"
     }
     
     
