@@ -314,10 +314,10 @@ class CoreViewController {
     
     func getTag(current: Double,values: [Double]) ->String {
         let r = current > 100 ? 0.0125 : 0.0125*2
-        var lc = 0
-        var sc = 0
-        var lnc = 0
-        var snc = 0
+//        var lc = 0
+//        var sc = 0
+//        var lnc = 0
+//        var snc = 0
         
         let minX = values.min() ?? 0
         let maxX = values.max() ?? 0
