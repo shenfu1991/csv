@@ -30,6 +30,7 @@ let pathArr = ["3m","5m","15m","30m","1h","4h"]
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
+let rootPath = "7-12"
 
 class CoreViewController {
     
@@ -223,7 +224,7 @@ class CoreViewController {
         
         do {
 
-            let path = "/Users/xuanyuan/Downloads/7-12/\(pathName)/\(sbName)_\(itName).csv"
+            let path = "/Users/xuanyuan/Downloads/\(rootPath)/\(pathName)/\(sbName)_\(itName).csv"
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
