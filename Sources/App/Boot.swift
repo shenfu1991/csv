@@ -224,7 +224,7 @@ class CoreViewController {
         
         do {
 
-            let path = "/Users/xuanyuan/Downloads/io/\(pathName)/\(sbName)_\(itName).csv"
+            let path = "/Users/xuanyuan/Downloads/7-12/\(pathName)/\(sbName)_\(itName).csv"
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
