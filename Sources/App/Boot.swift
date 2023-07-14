@@ -214,17 +214,16 @@ class CoreViewController {
     func initFile() {
         
         let home = "/Users/xuanyuan/Documents/csv/"
-//        let url = home + "\(Int.random(in: 99999...1000000000)).csv"
         let url = home + sbName + "_" + itName + "_\(pathName).csv"
         csvUrl = URL(fileURLWithPath:url)
-        try? "current,avg,open,high,low,rate,volume,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? "minRate,maxRate,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
         
         do {
 
-            let path = "/Users/xuanyuan/Downloads/io/\(pathName)/\(sbName)_\(itName).csv"
+            let path = "/Users/xuanyuan/Downloads/7-12/\(pathName)/\(sbName)_\(itName).csv"
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
@@ -242,7 +241,7 @@ class CoreViewController {
             for (idx,_) in rows.enumerated() {
                 // 使用列名来访问数据
                 
-                if idx >= limit {
+                if idx >= limit*2 {
                     let firstRow = rows[idx-(limit-1)]
                     let fcurrent = firstRow["current"]?.doubleValue() ?? 0
                     if fcurrent == 0 {
@@ -251,11 +250,11 @@ class CoreViewController {
                     
                     autoreleasepool {
                         let arr = rows[idx-(limit-1)...idx]
-                        let fopen = firstRow["open"]?.doubleValue() ?? 0
-                        let fhigh = firstRow["high"]?.doubleValue() ?? 0
-                        let flow = firstRow["low"]?.doubleValue() ?? 0
-                        let frate = firstRow["rate"]?.doubleValue() ?? 0
-                        let fvolume = firstRow["volume"]?.doubleValue() ?? 0
+//                        let fopen = firstRow["open"]?.doubleValue() ?? 0
+//                        let fhigh = firstRow["high"]?.doubleValue() ?? 0
+//                        let flow = firstRow["low"]?.doubleValue() ?? 0
+//                        let frate = firstRow["rate"]?.doubleValue() ?? 0
+//                        let fvolume = firstRow["volume"]?.doubleValue() ?? 0
                         let fvolatility = firstRow["volatility"]?.doubleValue() ?? 0
                         let fsharp = firstRow["sharp"]?.doubleValue() ?? 0
                         let fsignal = firstRow["signal"]?.doubleValue() ?? 0
@@ -264,22 +263,27 @@ class CoreViewController {
                             (dic["current"] ?? "").doubleValue()
                         }
                         
-                        let avg = (fopen + fhigh + flow + fcurrent)/4.0
-                        let tag = getTag(current:fcurrent, values: foreCurrents)
+                        let arr1 = rows[idx-(2*limit-1)-1...idx]
+
+                        let prePrices = arr1.map { dic in
+                            (dic["current"] ?? "").doubleValue()
+                        }
                         
-                        //                    open,high,low,rate,volume,volatility,sharp,signal,result\n
-                        let newRow = "\(fcurrent.fmt()),\(avg.fmt()),\(fopen.fmt()),\(fhigh.fmt()),\(flow.fmt()),\(frate.fmt()),\(fvolume.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag)\n"
+                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: prePrices)
                         
-                        if tag != "" {
+//                        "minRate,maxRate,volatility,sharp,signal,result\n"
+                        let newRow = "\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
+                        
+                        if tag.0 != "" {
                             addContent(text: newRow)
                         }
-                        if tag == "long" {
+                        if tag.0 == "long" {
                             lc += 1
-                        }else if tag == "short" {
+                        }else if tag.0 == "short" {
                             sc += 1
-                        }else if tag == "LN" {
+                        }else if tag.0 == "LN" {
                             lnc += 1
-                        }else if tag == "SN" {
+                        }else if tag.0 == "SN" {
                             snc += 1
                         }
                     }
@@ -312,40 +316,41 @@ class CoreViewController {
         }
     }
     
-    func getTag(current: Double,values: [Double]) ->String {
+    func getTag(current: Double,values: [Double],prePrices: [Double]) ->(String,Double,Double) {
         let r = current > 100 ? 0.0125 : 0.0125*2
-//        var lc = 0
-//        var sc = 0
-//        var lnc = 0
-//        var snc = 0
         
         let minX = values.min() ?? 0
         let maxX = values.max() ?? 0
         let sub1 = fabs(maxX - current)
         let sub2 = fabs(minX - current)
         
+        let minX2 = prePrices.min() ?? 0
+        let maxX2 = prePrices.max() ?? 0
+        let minRate = minX2/current
+        let maxRate = maxX2/current
+        
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
-                return "short"
+                return ("short",minRate,maxRate)
             }
-            return "SN"
+            return ("SN",minRate,maxRate)
         }else if current <= maxX && current >= minX  {
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
-                    return "long"
+                    return ("long",minRate,maxRate)
                 }
-                return "LN"
+                return ("LN",minRate,maxRate)
             }else{
                 if (current - minX)/minX >= r {
-                    return "short"
+                    return ("short",minRate,maxRate)
                 }
-                return "SN"
+                return ("SN",minRate,maxRate)
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
-                return "long"
+                return ("long",minRate,maxRate)
             }
-            return "LN"
+            return ("LN",minRate,maxRate)
         }
         
         
@@ -377,7 +382,7 @@ class CoreViewController {
 //            return "SN"
 //        }
         
-        return ""
+        return ("",0,0)
     }
     
     
