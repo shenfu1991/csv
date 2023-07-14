@@ -273,7 +273,7 @@ class CoreViewController {
                         let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: prePrices)
                         
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
-                        let newRow = "\(tag.3),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
+                        let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
                         
                         if tag.0 != "" {
                             addContent(text: newRow)
