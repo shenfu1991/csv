@@ -217,7 +217,7 @@ class CoreViewController {
         let home = "/Users/xuanyuan/Documents/csv/"
         let url = home + sbName + "_" + itName + "_\(pathName).csv"
         csvUrl = URL(fileURLWithPath:url)
-        try? "minRate,maxRate,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? "iRank,minRate,maxRate,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
@@ -273,7 +273,7 @@ class CoreViewController {
                         let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: prePrices)
                         
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
-                        let newRow = "\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
+                        let newRow = "\(tag.3),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
                         
                         if tag.0 != "" {
                             addContent(text: newRow)
@@ -317,7 +317,7 @@ class CoreViewController {
         }
     }
     
-    func getTag(current: Double,values: [Double],prePrices: [Double]) ->(String,Double,Double) {
+    func getTag(current: Double,values: [Double],prePrices: [Double]) ->(String,Double,Double,Double) {
         let r = current > 100 ? 0.0125 : 0.0125*2
         
         let minX = values.min() ?? 0
@@ -327,31 +327,41 @@ class CoreViewController {
         
         let minX2 = prePrices.min() ?? 0
         let maxX2 = prePrices.max() ?? 0
+        
+        var iR: Double = -1
+        var fu = prePrices
+        fu.append(current)
+        fu.sort()
+        
+        if let idx = fu.firstIndex(of: current) {
+            iR = Double(idx)/Double(fu.count)
+        }
+        
         let minRate = minX2/current
         let maxRate = maxX2/current
         
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
-                return ("short",minRate,maxRate)
+                return ("short",minRate,maxRate,iR)
             }
-            return ("SN",minRate,maxRate)
+            return ("SN",minRate,maxRate,iR)
         }else if current <= maxX && current >= minX  {
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
-                    return ("long",minRate,maxRate)
+                    return ("long",minRate,maxRate,iR)
                 }
-                return ("LN",minRate,maxRate)
+                return ("LN",minRate,maxRate,iR)
             }else{
                 if (current - minX)/minX >= r {
-                    return ("short",minRate,maxRate)
+                    return ("short",minRate,maxRate,iR)
                 }
-                return ("SN",minRate,maxRate)
+                return ("SN",minRate,maxRate,iR)
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
-                return ("long",minRate,maxRate)
+                return ("long",minRate,maxRate,iR)
             }
-            return ("LN",minRate,maxRate)
+            return ("LN",minRate,maxRate,iR)
         }
         
         
@@ -383,7 +393,7 @@ class CoreViewController {
 //            return "SN"
 //        }
         
-        return ("",0,0)
+        return ("",0,0,-1)
     }
     
     
