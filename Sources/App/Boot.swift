@@ -21,12 +21,12 @@ let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRT
 //let pathArr = ["3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
 let itArr = ["3m","5m","15m","30m","1h","4h"]
 let pathArr = ["3m","5m","15m","30m","1h","4h"]
-//let pathArr = ["3m","5m","15m","30m","3mv2","5mv2","15mv2","30mv2","3mv3","5mv3","15mv3","30mv3","1hv3","4hv3"]
-//let itArr = ["3m","5m","15m","30m","3m","5m","15m","30m","3m","5m","15m","30m","1h","4h"]
 
-//let pathArr = ["15m"]
-//let itArr = ["15m"]
-//let modelArr = ["15v3","15v4","15v5","15v6","15v7","15v8","15v9","15v10"]
+
+let partArr = ["part_1","part_2","part_3"]
+var partName = ""
+var partIdx = 0
+
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
@@ -194,13 +194,20 @@ class CoreViewController {
         pathName = pathArr[pathIdx]
         sbName = sbArr[sbIdx]
         itName = itArr[pathIdx]
+        partName = partArr[partIdx]
 
         initFile()
         readCsvFiles()
     }
     
     func nextFile() {
-        sbIdx += 1
+        
+        partIdx += 1
+        
+        if partIdx >= partArr.count {
+            partIdx = 0
+            sbIdx += 1
+        }
         if sbIdx >= sbArr.count {
             sbIdx = 0
             pathIdx += 1
@@ -224,7 +231,9 @@ class CoreViewController {
         
         do {
 
-            let path = "/Users/xuanyuan/Downloads/\(rootPath)/\(pathName)/\(sbName)_\(itName).csv"
+            let path = "/Users/xuanyuan/Downloads/\(rootPath)/\(pathName)/\(sbName)_\(itName)_\(partName).csv"
+            
+            NSLog("path=\(path)")
 
             let csvFileUrl = URL(fileURLWithPath: path)
 
