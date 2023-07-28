@@ -244,34 +244,31 @@ class CoreViewController {
                 // 使用列名来访问数据
                 
                 if idx >= limit*2 {
-                    let firstRow = rows[idx-(limit-1)]
-                    let fcurrent = firstRow["current"]?.doubleValue() ?? 0
+                    let midIdx = idx-limit
+                    let midRow = rows[midIdx]
+                    let fcurrent = midRow["current"]?.doubleValue() ?? 0
                     if fcurrent == 0 {
                         continue
                     }
                     
                     autoreleasepool {
-                        let arr = rows[idx-(limit-1)...idx]
-//                        let fopen = firstRow["open"]?.doubleValue() ?? 0
-//                        let fhigh = firstRow["high"]?.doubleValue() ?? 0
-//                        let flow = firstRow["low"]?.doubleValue() ?? 0
-//                        let frate = firstRow["rate"]?.doubleValue() ?? 0
-//                        let fvolume = firstRow["volume"]?.doubleValue() ?? 0
-                        let fvolatility = firstRow["volatility"]?.doubleValue() ?? 0
-                        let fsharp = firstRow["sharp"]?.doubleValue() ?? 0
-                        let fsignal = firstRow["signal"]?.doubleValue() ?? 0
+                        let fvolatility = midRow["volatility"]?.doubleValue() ?? 0
+                        let fsharp = midRow["sharp"]?.doubleValue() ?? 0
+                        let fsignal = midRow["signal"]?.doubleValue() ?? 0
                         
-                        let foreCurrents = arr.map { dic in
+                        let foreArr = rows[(midIdx+2)...idx]
+                        let foreCurrents = foreArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
                         }
                         
-                        let arr1 = rows[idx-(2*limit-1)-1...idx]
+                        let backIdx = idx-(2*limit)
+                        let backArr = rows[(backIdx+1)...midIdx-1]
 
-                        let prePrices = arr1.map { dic in
+                        let backPrices = backArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
                         }
                         
-                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: prePrices)
+                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
                         
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
                         let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
