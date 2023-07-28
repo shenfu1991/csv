@@ -342,9 +342,9 @@ class CoreViewController {
         
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
-                return ("short",minRate,maxRate,iR)
+                return ("long",minRate,maxRate,iR)
             }
-            return ("SN",minRate,maxRate,iR)
+            return ("LN",minRate,maxRate,iR)
         }else if current <= maxX && current >= minX  {
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
@@ -359,9 +359,9 @@ class CoreViewController {
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
-                return ("long",minRate,maxRate,iR)
+                return ("short",minRate,maxRate,iR)
             }
-            return ("LN",minRate,maxRate,iR)
+            return ("SN",minRate,maxRate,iR)
         }
         
         
