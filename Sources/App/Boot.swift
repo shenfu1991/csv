@@ -29,7 +29,7 @@ let pathArr = ["3m","5m","15m","30m","1h","4h"]
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "8-1"
+let rootPath = "8-3"
 
 class CoreViewController {
     
@@ -107,10 +107,10 @@ class CoreViewController {
                         let fsharp = midRow["sharp"]?.doubleValue() ?? 0
                         let fsignal = midRow["signal"]?.doubleValue() ?? 0
                         
-                        let foreArr = rows[(midIdx+2)...idx]
-                        let foreCurrents = foreArr.map { dic in
-                            (dic["current"] ?? "").doubleValue()
-                        }
+//                        let foreArr = rows[(midIdx+2)...idx]
+//                        let foreCurrents = foreArr.map { dic in
+//                            (dic["current"] ?? "").doubleValue()
+//                        }
                         
                         let backIdx = idx-(2*limit)
                         let backArr = rows[(backIdx+1)...midIdx-1]
