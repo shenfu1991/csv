@@ -20,16 +20,16 @@ var gModel: MLModel!
 //let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["RDNTUSDT"]
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
-let sbArr = ["IMXUSDT"]
-//let itArr = ["15m"]
-//let pathArr = ["15m"]
-let itArr = ["3m","5m","15m","30m","1h","4h"]
-let pathArr = ["3m","5m","15m","30m","1h","4h"]
+let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
+let itArr = ["3m","5m","15m"]
+let pathArr = ["3m","5m","15m"]
+//let itArr = ["3m","5m","15m","30m","1h","4h"]
+//let pathArr = ["3m","5m","15m","30m","1h","4h"]
 
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "8-3"
+let rootPath = "7-12"
 
 class CoreViewController {
     
@@ -107,10 +107,10 @@ class CoreViewController {
                         let fsharp = midRow["sharp"]?.doubleValue() ?? 0
                         let fsignal = midRow["signal"]?.doubleValue() ?? 0
                         
-//                        let foreArr = rows[(midIdx+2)...idx]
-//                        let foreCurrents = foreArr.map { dic in
-//                            (dic["current"] ?? "").doubleValue()
-//                        }
+                        let foreArr = rows[(midIdx+2)...idx]
+                        let foreCurrents = foreArr.map { dic in
+                            (dic["current"] ?? "").doubleValue()
+                        }
                         
                         let backIdx = idx-(2*limit)
                         let backArr = rows[(backIdx+1)...midIdx-1]
@@ -119,8 +119,8 @@ class CoreViewController {
                             (dic["current"] ?? "").doubleValue()
                         }
                         
-//                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
-                        let tag = getTag2(current:fcurrent,prePrices: backPrices)
+                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
+//                        let tag = getTag2(current:fcurrent,prePrices: backPrices)
                         
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
                         let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
