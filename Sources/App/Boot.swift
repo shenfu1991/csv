@@ -17,19 +17,19 @@ var pathIdx = 0
 var sbIdx = 0
 var gModel: MLModel!
 
-//let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["RDNTUSDT"]
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
-let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
-let itArr = ["3m","5m","15m"]
-let pathArr = ["3m","5m","15m"]
-//let itArr = ["3m","5m","15m","30m","1h","4h"]
-//let pathArr = ["3m","5m","15m","30m","1h","4h"]
+//let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
+//let itArr = ["3m","5m","15m"]
+//let pathArr = ["3m","5m","15m"]
+let itArr = ["3m","5m","15m","30m","1h","4h"]
+let pathArr = ["3m","5m","15m","30m","1h","4h"]
 
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "7-12"
+let rootPath = "8-17"
 
 class CoreViewController {
     
