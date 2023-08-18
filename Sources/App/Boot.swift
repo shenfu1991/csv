@@ -29,7 +29,7 @@ let pathArr = ["3m","5m","15m","30m","1h","4h"]
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "8-17"
+let rootPath = "8-3"
 
 class CoreViewController {
     
@@ -119,9 +119,10 @@ class CoreViewController {
                             (dic["current"] ?? "").doubleValue()
                         }
                         
-                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
+//                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
 //                        let tag = getTag2(current:fcurrent,prePrices: backPrices)
                         
+                        let tag = getTag3(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
                         let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
                         
@@ -264,6 +265,106 @@ class CoreViewController {
         
         return ("",0,0,-1)
     }
+    
+    func getTag3(current: Double,backPrices: [Double],forePrices: [Double]) ->(String,Double,Double,Double) {
+        let r = current > 100 ? 0.0125 : 0.0125*2
+
+        let minX = backPrices.min() ?? 0
+        let maxX = backPrices.max() ?? 0
+        
+        let sub1 = fabs(maxX - current)
+        let sub2 = fabs(minX - current)
+        
+        var iR: Double = -1
+        var fu = backPrices
+        fu.append(current)
+        fu.sort()
+        
+        if let idx = fu.firstIndex(of: current) {
+            iR = Double(idx)/Double(fu.count)
+        }
+        
+        let minRate = minX/current
+        let maxRate = maxX/current
+        
+        if current >= maxX && current >= minX  {
+            if (current - minX)/minX >= r {
+                let tag = featureStatus(current: current, forePrices: forePrices)
+                if tag == "long" {
+                    return ("long",minRate,maxRate,iR)
+                }
+                return ("LN",minRate,maxRate,iR)
+            }
+            return ("LN",minRate,maxRate,iR)
+        }else if current <= maxX && current >= minX  {
+            if sub1 > sub2 {
+                if (maxX - current)/current >= r {
+                    let tag = featureStatus(current: current, forePrices: forePrices)
+                    if tag == "long" {
+                        return ("long",minRate,maxRate,iR)
+                    }
+                    return ("LN",minRate,maxRate,iR)
+                }
+                return ("LN",minRate,maxRate,iR)
+            }else{
+                if (current - minX)/minX >= r {
+                    let tag = featureStatus(current: current, forePrices: forePrices)
+                    if tag == "short" {
+                        return ("short",minRate,maxRate,iR)
+                    }
+                    return ("SN",minRate,maxRate,iR)
+                }
+                return ("SN",minRate,maxRate,iR)
+            }
+        }else if current <= maxX && current <= minX  {
+            if (maxX - current)/current >= r {
+                let tag = featureStatus(current: current, forePrices: forePrices)
+                if tag == "short" {
+                    return ("short",minRate,maxRate,iR)
+                }
+                return ("SN",minRate,maxRate,iR)
+            }
+            return ("SN",minRate,maxRate,iR)
+        }
+        
+        return ("",0,0,-1)
+    }
+    
+    func featureStatus(current: Double,forePrices: [Double]) ->String {
+        let r = current > 100 ? 0.0125 : 0.0125*2
+
+        let minX = forePrices.min() ?? 0
+        let maxX = forePrices.max() ?? 0
+        
+        if current >= maxX && current >= minX  {
+            if (current - minX)/minX >= r {
+                return ("long")
+            }
+            return ("LN")
+        }else if current <= maxX && current >= minX  {
+            let sub1 = fabs(maxX - current)
+            let sub2 = fabs(minX - current)
+            if sub1 > sub2 {
+                if (maxX - current)/current >= r {
+                    return ("long")
+                }
+                return ("LN")
+            }else{
+                if (current - minX)/minX >= r {
+                    return ("short")
+                }
+                return ("SN")
+            }
+        }else if current <= maxX && current <= minX  {
+            if (maxX - current)/current >= r {
+                return ("short")
+            }
+            return ("SN")
+        }
+        
+        return ""
+    }
+
     
     
 }
