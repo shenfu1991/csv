@@ -173,8 +173,7 @@ class CoreViewController {
         
         let minX = values.min() ?? 0
         let maxX = values.max() ?? 0
-        let sub1 = fabs(maxX - current)
-        let sub2 = fabs(minX - current)
+ 
         
         let minX2 = prePrices.min() ?? 0
         let maxX2 = prePrices.max() ?? 0
@@ -197,6 +196,8 @@ class CoreViewController {
             }
             return ("LN",minRate,maxRate,iR)
         }else if current <= maxX && current >= minX  {
+            let sub1 = fabs(maxX - current)
+            let sub2 = fabs(minX - current)
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
                     return ("long",minRate,maxRate,iR)
@@ -224,9 +225,6 @@ class CoreViewController {
         let minX = prePrices.min() ?? 0
         let maxX = prePrices.max() ?? 0
         
-        let sub1 = fabs(maxX - current)
-        let sub2 = fabs(minX - current)
-        
         var iR: Double = -1
         var fu = prePrices
         fu.append(current)
@@ -245,6 +243,8 @@ class CoreViewController {
             }
             return ("LN",minRate,maxRate,iR)
         }else if current <= maxX && current >= minX  {
+            let sub1 = fabs(maxX - current)
+            let sub2 = fabs(minX - current)
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
                     return ("long",minRate,maxRate,iR)
