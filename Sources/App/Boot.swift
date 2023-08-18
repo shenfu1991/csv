@@ -67,7 +67,7 @@ class CoreViewController {
         let home = "/Users/xuanyuan/Documents/csv/"
         let url = home + sbName + "_" + itName + "_\(pathName).csv"
         csvUrl = URL(fileURLWithPath:url)
-        try? "iRank,minRate,maxRate,volatility,sharp,signal,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? "iRank,minRate,maxRate,volatility,sharp,signal,minR,maxR,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
@@ -124,7 +124,7 @@ class CoreViewController {
                         
                         let tag = getTag3(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
-                        let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.0)\n"
+                        let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.4.fmt()),\(tag.5.fmt()),\(tag.0)\n"
                         
                         if tag.0 != "" {
                             addContent(text: newRow)
@@ -266,7 +266,7 @@ class CoreViewController {
         return ("",0,0,-1)
     }
     
-    func getTag3(current: Double,backPrices: [Double],forePrices: [Double]) ->(String,Double,Double,Double) {
+    func getTag3(current: Double,backPrices: [Double],forePrices: [Double]) ->(String,Double,Double,Double,Double,Double) {
         let r = current > 100 ? 0.0125 : 0.0125*2
 
         let minX = backPrices.min() ?? 0
@@ -287,47 +287,50 @@ class CoreViewController {
         let minRate = minX/current
         let maxRate = maxX/current
         
+        let minR = (current - minX)/minX
+        let maxR = (current - maxX)/maxX
+
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
                 let tag = featureStatus(current: current, forePrices: forePrices)
                 if tag == "long" {
-                    return ("long",minRate,maxRate,iR)
+                    return ("long",minRate,maxRate,iR,minR,maxR)
                 }
-                return ("LN",minRate,maxRate,iR)
+                return ("LN",minRate,maxRate,iR,minR,maxR)
             }
-            return ("LN",minRate,maxRate,iR)
+            return ("LN",minRate,maxRate,iR,minR,maxR)
         }else if current <= maxX && current >= minX  {
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
                     let tag = featureStatus(current: current, forePrices: forePrices)
                     if tag == "long" {
-                        return ("long",minRate,maxRate,iR)
+                        return ("long",minRate,maxRate,iR,minR,maxR)
                     }
-                    return ("LN",minRate,maxRate,iR)
+                    return ("LN",minRate,maxRate,iR,minR,maxR)
                 }
-                return ("LN",minRate,maxRate,iR)
+                return ("LN",minRate,maxRate,iR,minR,maxR)
             }else{
                 if (current - minX)/minX >= r {
                     let tag = featureStatus(current: current, forePrices: forePrices)
                     if tag == "short" {
-                        return ("short",minRate,maxRate,iR)
+                        return ("short",minRate,maxRate,iR,minR,maxR)
                     }
-                    return ("SN",minRate,maxRate,iR)
+                    return ("SN",minRate,maxRate,iR,minR,maxR)
                 }
-                return ("SN",minRate,maxRate,iR)
+                return ("SN",minRate,maxRate,iR,minR,maxR)
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
                 let tag = featureStatus(current: current, forePrices: forePrices)
                 if tag == "short" {
-                    return ("short",minRate,maxRate,iR)
+                    return ("short",minRate,maxRate,iR,minR,maxR)
                 }
-                return ("SN",minRate,maxRate,iR)
+                return ("SN",minRate,maxRate,iR,minR,maxR)
             }
-            return ("SN",minRate,maxRate,iR)
+            return ("SN",minRate,maxRate,iR,minR,maxR)
         }
         
-        return ("",0,0,-1)
+        return ("",0,0,-1,0,0)
     }
     
     func featureStatus(current: Double,forePrices: [Double]) ->String {
