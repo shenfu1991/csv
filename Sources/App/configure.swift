@@ -15,8 +15,9 @@ public func configure(_ app: Application) async throws {
     
     kApp = app
     app.http.server.configuration.port = 1999
-    let vc = CoreViewController()
-    vc.configModels()
+//    let vc = CoreViewController()
+//    vc.configModels()
+    loadCSV()
 }
 
 
