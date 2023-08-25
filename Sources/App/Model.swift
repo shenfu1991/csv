@@ -20,13 +20,14 @@ var bingoLN = 0
 var bingoSN = 0
 var errorLong = 0
 var errorShort = 0
-let csvTestPath = "/Users/xuanyuan/py/merged_8-17-30m.csv"
+//let csvTestPath = "/Users/xuanyuan/py/merged_8-17-30m.csv"
+let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/WOOUSDT_30m_30m.csv"
+let port = 6600
 
 
 func modelValidation() {
     
     if let midRow = csvArrs?.rows[csvIndex] {
-        allCount = midRow.count
         let iRank = midRow["iRank"]?.doubleValue() ?? 0
         let minRate = midRow["minRate"]?.doubleValue() ?? 0
         let maxRate = midRow["maxRate"]?.doubleValue() ?? 0
@@ -35,19 +36,20 @@ func modelValidation() {
         let signal = midRow["signal"]?.doubleValue() ?? 0
         let result = midRow["result"] ?? ""
         
-        debugPrint(iRank)
-        debugPrint(minRate)
-        debugPrint(maxRate)
-        debugPrint(volatility)
-        debugPrint(sharp)
-        debugPrint(signal)
-        debugPrint(result)
+//        debugPrint(iRank)
+//        debugPrint(minRate)
+//        debugPrint(maxRate)
+//        debugPrint(volatility)
+//        debugPrint(sharp)
+//        debugPrint(signal)
+//        debugPrint(result)
         
         let dic = [
                 "input":
                     [
                         iRank,
                         minRate,
+                        maxRate,
                         volatility,
                         sharp,
                         signal
@@ -93,10 +95,13 @@ func nextT() {
         let eLongRate = Double(errorLong)/Double(allCount)
         let eShortRate = Double(errorShort)/Double(allCount)
 
-        debugPrint("long rate: \(longRate)")
-        debugPrint("short rate: \(shortRate)")
-        debugPrint("LN rate: \(LNRate)")
-        debugPrint("SN rate: \(SNRate)")
+        debugPrint("long rate: \(bingoLong)     R:\(longRate)")
+        debugPrint("short rate: \(bingoShort)   R:\(shortRate)")
+        debugPrint("LN rate: \(bingoLN)       R:\(LNRate)")
+        debugPrint("SN rate: \(bingoSN)    R:\(SNRate)")
+        debugPrint("eLongRate rate: \(errorLong)        R:\(eLongRate)")
+        debugPrint("eShortRate rate: \(errorShort)     R:\(eShortRate)")
+
 
         exit(0)
         return
@@ -121,6 +126,8 @@ func loadCSV() {
         // 获取所有行
         csvArrs = csvFile
         
+        allCount = csvArrs?.rows.count ?? 0
+        debugPrint("total: \(allCount)")
         modelValidation()
         
     }catch {
@@ -131,27 +138,27 @@ func loadCSV() {
 func predictLocal3(_ dic: any Content,interval: String,callback: SKCallback?) {
     
     do {
-        let response = try kApp.client.post("http://127.0.0.1:5001/predict") { req in
+        let response = try kApp.client.post("http://127.0.0.1:\(port)/predict") { req in
             try req.content.encode(dic)
         }.wait()
 
         if response.status == .ok {
             // 解码并打印响应
-            let prediction = try response.content.decode([Double].self)
-            print(prediction)
-//            let res = prediction.first ?? ""
-//            if let ss = callback {
-//                ss(res)
-//            }
+            let prediction = try response.content.decode([String].self)
+//            print("prediction=\(prediction)")
+            let res = prediction.first ?? ""
+            if let ss = callback {
+                ss(res)
+            }
 //            print(res)
         } else {
-            print("Error: \(response.status)")
+//            print("Error: \(response.status)")
             if let ss = callback {
                 ss("\(response.status)")
             }
         }
     } catch {
-        print("Error: \(error)")
+//        print("Error: \(error)")
         if let ss = callback {
             ss("\(error.localizedDescription)")
         }
