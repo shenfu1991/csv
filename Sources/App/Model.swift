@@ -20,6 +20,7 @@ var bingoLN = 0
 var bingoSN = 0
 var errorLong = 0
 var errorShort = 0
+let csvTestPath = "/Users/xuanyuan/py/merged_8-17-30m.csv"
 
 
 func modelValidation() {
@@ -110,7 +111,7 @@ func nextT() {
 func loadCSV() {
     
     do {
-        let path = "/Users/xuanyuan/Downloads/1h/ALPHAUSDT_1h_1h.csv"
+        let path = csvTestPath
         print(path)
         
         let csvFileUrl = URL(fileURLWithPath: path)
