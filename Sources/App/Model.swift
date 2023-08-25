@@ -13,10 +13,19 @@ typealias SKCallback = (String) -> Void
 
 var csvArrs: NamedCSV? = nil
 var csvIndex = 0
+var allCount = 0
+var bingoLong = 0
+var bingoShort = 0
+var bingoLN = 0
+var bingoSN = 0
+var errorLong = 0
+var errorShort = 0
+
 
 func modelValidation() {
     
     if let midRow = csvArrs?.rows[csvIndex] {
+        allCount = midRow.count
         let iRank = midRow["iRank"]?.doubleValue() ?? 0
         let minRate = midRow["minRate"]?.doubleValue() ?? 0
         let maxRate = midRow["maxRate"]?.doubleValue() ?? 0
@@ -44,6 +53,56 @@ func modelValidation() {
                     ]
             ]
         
+        predictLocal3(dic, interval: "3m") { res in
+            if result == "long" {
+                if result == res {
+                    bingoLong += 1
+                }else if res == "short" {
+                    errorLong += 1
+                }
+            }else if result == "short" {
+                if result == res {
+                    bingoShort += 1
+                }else if res == "long" {
+                    errorShort += 1
+                }
+            }else if result == "LN" {
+                if result == res {
+                    bingoLN += 1
+                }
+            }else if result == "SN" {
+                if result == res {
+                    bingoSN += 1
+                }
+            }
+            nextT()
+        }
+    }
+    
+}
+
+func nextT() {
+    csvIndex += 1
+    if csvIndex >= allCount {
+        debugPrint("----all finished----")
+        let longRate = Double(bingoLong)/Double(allCount)
+        let shortRate = Double(bingoShort)/Double(allCount)
+        let LNRate = Double(bingoLN)/Double(allCount)
+        let SNRate = Double(bingoSN)/Double(allCount)
+        let eLongRate = Double(errorLong)/Double(allCount)
+        let eShortRate = Double(errorShort)/Double(allCount)
+
+        debugPrint("long rate: \(longRate)")
+        debugPrint("short rate: \(shortRate)")
+        debugPrint("LN rate: \(LNRate)")
+        debugPrint("SN rate: \(SNRate)")
+
+        exit(0)
+        return
+    }
+    
+    DispatchQueue.global().asyncAfter(deadline: .now()+0.1) {
+        modelValidation()
     }
     
 }
@@ -51,8 +110,8 @@ func modelValidation() {
 func loadCSV() {
     
     do {
-        
         let path = "/Users/xuanyuan/Downloads/1h/ALPHAUSDT_1h_1h.csv"
+        print(path)
         
         let csvFileUrl = URL(fileURLWithPath: path)
         
