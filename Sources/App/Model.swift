@@ -20,9 +20,13 @@ var bingoLN = 0
 var bingoSN = 0
 var errorLong = 0
 var errorShort = 0
-//let csvTestPath = "/Users/xuanyuan/py/merged_8-17-30m.csv"
-let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/WOOUSDT_30m_30m.csv"
+//let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/ALPHAUSDT_30m_30m.csv"
+//let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/WOOUSDT_30m_30m_processed.csv"
+let csvTestPath = "/Users/xuanyuan/py/merged_8-17-30m.csv"
 let port = 6600
+var d: TimeInterval = 0
+var totalLong = 0
+var totalShort = 0
 
 
 func modelValidation() {
@@ -34,7 +38,14 @@ func modelValidation() {
         let volatility = midRow["volatility"]?.doubleValue() ?? 0
         let sharp = midRow["sharp"]?.doubleValue() ?? 0
         let signal = midRow["signal"]?.doubleValue() ?? 0
+        let minR = midRow["minR"]?.doubleValue() ?? 0
+        let maxR = midRow["maxR"]?.doubleValue() ?? 0
         let result = midRow["result"] ?? ""
+        
+//        if result == "LN" || result == "SN" {
+//            nextT()
+//            return
+//        }
         
 //        debugPrint(iRank)
 //        debugPrint(minRate)
@@ -52,18 +63,22 @@ func modelValidation() {
                         maxRate,
                         volatility,
                         sharp,
+                        minR,
+                        maxR,
                         signal
                     ]
             ]
         
         predictLocal3(dic, interval: "3m") { res in
             if result == "long" {
+                totalLong += 1
                 if result == res {
                     bingoLong += 1
                 }else if res == "short" {
                     errorLong += 1
                 }
             }else if result == "short" {
+                totalShort += 1
                 if result == res {
                     bingoShort += 1
                 }else if res == "long" {
@@ -88,26 +103,32 @@ func nextT() {
     csvIndex += 1
     if csvIndex >= allCount {
         debugPrint("----all finished----")
-        let longRate = Double(bingoLong)/Double(allCount)
-        let shortRate = Double(bingoShort)/Double(allCount)
+        let longRate = Double(bingoLong)/Double(totalLong)
+        let shortRate = Double(bingoShort)/Double(totalShort)
         let LNRate = Double(bingoLN)/Double(allCount)
         let SNRate = Double(bingoSN)/Double(allCount)
         let eLongRate = Double(errorLong)/Double(allCount)
         let eShortRate = Double(errorShort)/Double(allCount)
 
-        debugPrint("long rate: \(bingoLong)     R:\(longRate)")
-        debugPrint("short rate: \(bingoShort)   R:\(shortRate)")
+        debugPrint("long rate: \(bingoLong)/\(totalLong)     R:\(longRate)")
+        debugPrint("short rate: \(bingoShort)/\(totalShort)   R:\(shortRate)")
         debugPrint("LN rate: \(bingoLN)       R:\(LNRate)")
         debugPrint("SN rate: \(bingoSN)    R:\(SNRate)")
         debugPrint("eLongRate rate: \(errorLong)        R:\(eLongRate)")
         debugPrint("eShortRate rate: \(errorShort)     R:\(eShortRate)")
+        
+        let longScore = bingoLong-errorLong*2
+        let shortScore = bingoShort-errorShort*2
+        debugPrint("long score: \(longScore)")
+        debugPrint("short score: \(shortScore)")
 
-
+        let sub = Date().timeIntervalSince1970 - d
+        debugPrint("time=\(sub)")
         exit(0)
         return
     }
     
-    DispatchQueue.global().asyncAfter(deadline: .now()+0.1) {
+    DispatchQueue.global().asyncAfter(deadline: .now()+0.00001) {
         modelValidation()
     }
     
@@ -125,13 +146,14 @@ func loadCSV() {
         
         // 获取所有行
         csvArrs = csvFile
-        
+        d = Date().timeIntervalSince1970
         allCount = csvArrs?.rows.count ?? 0
         debugPrint("total: \(allCount)")
+        
         modelValidation()
         
     }catch {
-        
+        debugPrint("load failed: \(error.localizedDescription)")
     }
 }
 

@@ -29,7 +29,7 @@ let pathArr = ["3m","5m","15m","30m","1h","4h"]
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "8-3"
+let rootPath = "8-17"
 
 class CoreViewController {
     
