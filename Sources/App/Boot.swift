@@ -17,19 +17,19 @@ var pathIdx = 0
 var sbIdx = 0
 var gModel: MLModel!
 
-let sbArr = ["BTCUSDT","ETHUSDT","TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-//let sbArr = ["RDNTUSDT"]
+let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+//let sbArr = ["TOMOUSDT"]
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
-//let itArr = ["3m","5m","15m"]
-//let pathArr = ["3m","5m","15m"]
-let itArr = ["3m","5m","15m","30m","1h","4h"]
-let pathArr = ["3m","5m","15m","30m","1h","4h"]
+let itArr = ["15m"]
+let pathArr = ["15m"]
+//let itArr = ["3m","5m","15m","30m","1h","4h"]
+//let pathArr = ["3m","5m","15m","30m","1h","4h"]
 
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "8-17"
+let rootPath = "8-12-17"
 
 class CoreViewController {
     
@@ -67,7 +67,8 @@ class CoreViewController {
         let home = "/Users/xuanyuan/Documents/csv/"
         let url = home + sbName + "_" + itName + "_\(pathName).csv"
         csvUrl = URL(fileURLWithPath:url)
-        try? "iRank,minRate,maxRate,volatility,sharp,signal,minR,maxR,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+//        try? "iRank,minRate,maxRate,volatility,sharp,signal,minR,maxR,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? "shortAvg,longAvg,volatility,diff,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
@@ -87,6 +88,7 @@ class CoreViewController {
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
+            let backLimit = 450
             var lc = 0
             var sc = 0
             var lnc = 0
@@ -94,8 +96,8 @@ class CoreViewController {
             for (idx,_) in rows.enumerated() {
                 // 使用列名来访问数据
                 
-                if idx >= limit*2 {
-                    let midIdx = idx-limit
+                if idx >= (limit+backLimit)-1 {
+                    let midIdx = idx-limit+1
                     let midRow = rows[midIdx]
                     let fcurrent = midRow["current"]?.doubleValue() ?? 0
                     if fcurrent == 0 {
@@ -103,17 +105,17 @@ class CoreViewController {
                     }
                     
                     autoreleasepool {
-                        let fvolatility = midRow["volatility"]?.doubleValue() ?? 0
-                        let fsharp = midRow["sharp"]?.doubleValue() ?? 0
-                        let fsignal = midRow["signal"]?.doubleValue() ?? 0
+//                        let fvolatility = midRow["volatility"]?.doubleValue() ?? 0
+//                        let fsharp = midRow["sharp"]?.doubleValue() ?? 0
+//                        let fsignal = midRow["signal"]?.doubleValue() ?? 0
                         
-                        let foreArr = rows[(midIdx+2)...idx]
+                        let foreArr = rows[(midIdx)...idx]
                         let foreCurrents = foreArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
                         }
                         
-                        let backIdx = idx-(2*limit)
-                        let backArr = rows[(backIdx+1)...midIdx-1]
+                        let backIdx = midIdx - backLimit + 1
+                        let backArr = rows[(backIdx)...midIdx]
 
                         let backPrices = backArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
@@ -122,20 +124,23 @@ class CoreViewController {
 //                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
 //                        let tag = getTag2(current:fcurrent,prePrices: backPrices)
                         
-                        let tag = getTag3(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
+//                        let tag = getTag3(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
 //                        "minRate,maxRate,volatility,sharp,signal,result\n"
-                        let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.4.fmt()),\(tag.5.fmt()),\(tag.0)\n"
+//                        let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.4.fmt()),\(tag.5.fmt()),\(tag.0)\n"
                         
-                        if tag.0 != "" {
+                        let tag = featureStatus5(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
+                        let newRow = "\(tag.0.fmt()),\(tag.1.fmt()),\(tag.2.fmt()),\(tag.3.fmt()),\(tag.4)\n"
+                        
+//                        if tag.0 != "" {
                             addContent(text: newRow)
-                        }
-                        if tag.0 == "long" {
+//                        }
+                        if tag.4 == "long" {
                             lc += 1
-                        }else if tag.0 == "short" {
+                        }else if tag.4 == "short" {
                             sc += 1
-                        }else if tag.0 == "LN" {
+                        }else if tag.4 == "LN" {
                             lnc += 1
-                        }else if tag.0 == "SN" {
+                        }else if tag.4 == "SN" {
                             snc += 1
                         }
                     }
@@ -169,7 +174,7 @@ class CoreViewController {
     }
     
     func getTag(current: Double,values: [Double],prePrices: [Double]) ->(String,Double,Double,Double) {
-        let r = current > 100 ? 0.0125 : 0.0125*2
+        let r = 0.0125*2
         
         let minX = values.min() ?? 0
         let maxX = values.max() ?? 0
@@ -220,7 +225,7 @@ class CoreViewController {
     }
     
     func getTag2(current: Double,prePrices: [Double]) ->(String,Double,Double,Double) {
-        let r = current > 100 ? 0.0125 : 0.0125*2
+        let r = 0.0125*2
 
         let minX = prePrices.min() ?? 0
         let maxX = prePrices.max() ?? 0
@@ -267,7 +272,7 @@ class CoreViewController {
     }
     
     func getTag3(current: Double,backPrices: [Double],forePrices: [Double]) ->(String,Double,Double,Double,Double,Double) {
-        let r = current > 100 ? 0.0125 : 0.0125*2
+        let r = 0.0125*2
 
         let minX = backPrices.min() ?? 0
         let maxX = backPrices.max() ?? 0
@@ -334,7 +339,7 @@ class CoreViewController {
     }
     
     func featureStatus(current: Double,forePrices: [Double]) ->String {
-        let r = current > 100 ? 0.0125 : 0.0125*2
+        let r = 0.0125*2
 
         let minX = forePrices.min() ?? 0
         let maxX = forePrices.max() ?? 0
@@ -366,6 +371,54 @@ class CoreViewController {
         }
         
         return ""
+    }
+    
+    func featureStatus5(current: Double,backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,String) {
+        let r = 0.0125*2
+        
+        let minX = forePrices.min() ?? 0
+        let maxX = forePrices.max() ?? 0
+        let cc = backPrices.count-1
+        let shortArr = Array(backPrices[cc-149...cc])
+        let shortAvg = getAvg(shortArr)
+        let longAvg = getAvg(Array(backPrices[cc-449...cc]))
+        let vo = shortArr.rolling(window: 150).map { $0.standardDeviation }.last ?? 0
+        let vv = vo ?? 0
+        let diff = shortAvg - current
+
+        if current >= maxX && current >= minX  {
+            if (current - minX)/minX >= r {
+               return (shortAvg,longAvg,vv,diff,"long")
+            }
+            return (shortAvg,longAvg,vv,diff,"LN")
+        }else if current <= maxX && current >= minX  {
+            let sub1 = fabs(maxX - current)
+            let sub2 = fabs(minX - current)
+            if sub1 > sub2 {
+                if (maxX - current)/current >= r {
+                    return (shortAvg,longAvg,vv,diff,"long")
+                }
+                return (shortAvg,longAvg,vv,diff,"LN")
+            }else{
+                if (current - minX)/minX >= r {
+                    return (shortAvg,longAvg,vv,diff,"short")
+                }
+                return (shortAvg,longAvg,vv,diff,"SN")
+            }
+        }else if current <= maxX && current <= minX  {
+            if (maxX - current)/current >= r {
+                return (shortAvg,longAvg,vv,diff,"short")
+            }
+            return (shortAvg,longAvg,vv,diff,"SN")
+        }
+       
+        return (0,0,0,0,"LN")
+    }
+
+    
+    func getAvg(_ arr: [Double]) ->Double {
+        let sum = arr.reduce(0, +)
+        return sum / Double(arr.count)
     }
 
     
