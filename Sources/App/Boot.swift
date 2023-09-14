@@ -17,19 +17,22 @@ var pathIdx = 0
 var sbIdx = 0
 var gModel: MLModel!
 
-let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+let sbArr = ["IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+
+
+//let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["TOMOUSDT"]
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
-let itArr = ["15m"]
-let pathArr = ["15m"]
-//let itArr = ["3m","5m","15m","30m","1h","4h"]
-//let pathArr = ["3m","5m","15m","30m","1h","4h"]
+//let itArr = ["15m"]
+//let pathArr = ["15m"]
+let itArr = ["15m","30m","1h"]
+let pathArr = ["15m","30m","1h"]
 
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
-let rootPath = "8-12-17"
+let rootPath = "6-30-8-3"
 
 class CoreViewController {
     
@@ -88,7 +91,7 @@ class CoreViewController {
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
-            let backLimit = 450
+            let backLimit = 900
             var lc = 0
             var sc = 0
             var lnc = 0
