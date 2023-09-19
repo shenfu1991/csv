@@ -25,11 +25,8 @@ extension Array where Element == Double {
     }
 }
 
-//struct Data {
-//    var current: [Double]
-//    var volatility: [Double?] {
-//        return current.rolling(window: 10).map { $0.standardDeviation }
-//    }
-//}
 
-//var data = Data(current: [10.0, 12.0, 15.0, 14.5,
+
+
+
+

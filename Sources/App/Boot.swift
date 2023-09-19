@@ -17,17 +17,18 @@ var pathIdx = 0
 var sbIdx = 0
 var gModel: MLModel!
 
-let sbArr = ["IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+//let sbArr = ["IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 
+//let sbArr = ["BTCUSDT","CYBERUSDT", "SEIUSDT", "UNFIUSDT", "API3USDT", "STXUSDT", "PENDLEUSDT", "ARKMUSDT", "ZENUSDT", "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 
-//let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["TOMOUSDT"]
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
-//let itArr = ["15m"]
-//let pathArr = ["15m"]
-let itArr = ["15m","30m","1h"]
-let pathArr = ["15m","30m","1h"]
+let itArr = ["30m"]
+let pathArr = ["30m"]
+//let itArr = ["15m","30m","1h"]
+//let pathArr = ["15m","30m","1h"]
 
 let modelArr = ["rt4"]
 var modelIdx = 0
@@ -71,7 +72,7 @@ class CoreViewController {
         let url = home + sbName + "_" + itName + "_\(pathName).csv"
         csvUrl = URL(fileURLWithPath:url)
 //        try? "iRank,minRate,maxRate,volatility,sharp,signal,minR,maxR,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
-        try? "shortAvg,longAvg,volatility,diff,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? "rank,minR,maxR,minDiffR,maxDiffR,topRank,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
@@ -91,7 +92,7 @@ class CoreViewController {
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
-            let backLimit = 900
+            let backLimit = 1800
             var lc = 0
             var sc = 0
             var lnc = 0
@@ -108,10 +109,7 @@ class CoreViewController {
                     }
                     
                     autoreleasepool {
-//                        let fvolatility = midRow["volatility"]?.doubleValue() ?? 0
-//                        let fsharp = midRow["sharp"]?.doubleValue() ?? 0
-//                        let fsignal = midRow["signal"]?.doubleValue() ?? 0
-                        
+
                         let foreArr = rows[(midIdx)...idx]
                         let foreCurrents = foreArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
@@ -123,27 +121,19 @@ class CoreViewController {
                         let backPrices = backArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
                         }
-                        
-//                        let tag = getTag(current:fcurrent, values: foreCurrents,prePrices: backPrices)
-//                        let tag = getTag2(current:fcurrent,prePrices: backPrices)
-                        
-//                        let tag = getTag3(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
-//                        "minRate,maxRate,volatility,sharp,signal,result\n"
-//                        let newRow = "\(tag.3.fmt(x: 2)),\(tag.1.fmt()),\(tag.2.fmt()),\(fvolatility.fmt()),\(fsharp.fmt()),\(fsignal.fmt()),\(tag.4.fmt()),\(tag.5.fmt()),\(tag.0)\n"
-                        
-                        let tag = featureStatus5(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
-                        let newRow = "\(tag.0.fmt()),\(tag.1.fmt()),\(tag.2.fmt()),\(tag.3.fmt()),\(tag.4)\n"
-                        
-//                        if tag.0 != "" {
-                            addContent(text: newRow)
-//                        }
-                        if tag.4 == "long" {
+ 
+                        let tag = featureStatus6(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
+                        let newRow = "\(tag.0.fmt(x: 3)),\(tag.1.fmt(x: 3)),\(tag.2.fmt(x: 3)),\(tag.3.fmt(x: 3)),\(tag.4.fmt(x: 3)),\(tag.5.fmt(x: 3)),\(tag.6)\n"
+//
+                        addContent(text: newRow)
+
+                        if tag.6 == "long" {
                             lc += 1
-                        }else if tag.4 == "short" {
+                        }else if tag.6 == "short" {
                             sc += 1
-                        }else if tag.4 == "LN" {
+                        }else if tag.6 == "LN" {
                             lnc += 1
-                        }else if tag.4 == "SN" {
+                        }else if tag.6 == "SN" {
                             snc += 1
                         }
                     }
@@ -376,54 +366,77 @@ class CoreViewController {
         return ""
     }
     
-    func featureStatus5(current: Double,backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,String) {
+    
+//    "rank,minR,maxR,minDiffR,maxDiffR,topRank,result\n
+    
+    func featureStatus6(current: Double,backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,Double,Double,String) {
         let r = 0.0125*2
         
         let minX = forePrices.min() ?? 0
         let maxX = forePrices.max() ?? 0
+        
         let cc = backPrices.count-1
-        let shortArr = Array(backPrices[cc-149...cc])
-        let shortAvg = getAvg(shortArr)
-        let longAvg = getAvg(Array(backPrices[cc-449...cc]))
-        let vo = shortArr.rolling(window: 150).map { $0.standardDeviation }.last ?? 0
-        let vv = vo ?? 0
-        let diff = shortAvg - current
+        
+        var rank: Double = -1
+        var fu = backPrices
+        fu.append(current)
+        fu.sort()
+        if let idx = fu.firstIndex(of: current) {
+            rank = Double(idx)/Double(fu.count)
+        }
+        
+        let backMin = backPrices.min() ?? 0
+        let backMax = backPrices.max() ?? 0
+        let minR = backMin/current
+        let maxR = backMax/current
+        
+        let minDiffR = (backMin-current)/current
+        let maxDiffR = (backMax-current)/current
+        
+        let topIdx = Int(Double(cc)*0.25)
+        let topArr = Array(backPrices[cc-topIdx...cc])
+        
+        var topRank: Double = -1
+        var fu2 = topArr
+        fu2.append(current)
+        fu2.sort()
+        if let idx = fu2.firstIndex(of: current) {
+            topRank = Double(idx)/Double(fu2.count)
+        }
 
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
-               return (shortAvg,longAvg,vv,diff,"long")
+                return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"long")
             }
-            return (shortAvg,longAvg,vv,diff,"LN")
+            return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"LN")
         }else if current <= maxX && current >= minX  {
             let sub1 = fabs(maxX - current)
             let sub2 = fabs(minX - current)
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
-                    return (shortAvg,longAvg,vv,diff,"long")
+                    return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"long")
                 }
-                return (shortAvg,longAvg,vv,diff,"LN")
+                return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"LN")
             }else{
                 if (current - minX)/minX >= r {
-                    return (shortAvg,longAvg,vv,diff,"short")
+                    return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"short")
                 }
-                return (shortAvg,longAvg,vv,diff,"SN")
+                return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"SN")
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
-                return (shortAvg,longAvg,vv,diff,"short")
+               return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"short")
             }
-            return (shortAvg,longAvg,vv,diff,"SN")
+            return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"SN")
         }
        
-        return (0,0,0,0,"LN")
+        return (0,0,0,0,0,0,"LN")
     }
 
     
-    func getAvg(_ arr: [Double]) ->Double {
-        let sum = arr.reduce(0, +)
-        return sum / Double(arr.count)
-    }
+}
 
-    
-    
+func getAvg(_ arr: [Double]) ->Double {
+    let sum = arr.reduce(0, +)
+    return sum / Double(arr.count)
 }
