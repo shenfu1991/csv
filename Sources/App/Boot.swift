@@ -33,6 +33,7 @@ let pathArr = ["30m"]
 let modelArr = ["rt4"]
 var modelIdx = 0
 var modelName = ""
+//let rootPath = "6-30-8-3"
 let rootPath = "all"
 
 class CoreViewController {
@@ -92,7 +93,7 @@ class CoreViewController {
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
-            let backLimit = 1800
+            let backLimit = 900
             var lc = 0
             var sc = 0
             var lnc = 0
