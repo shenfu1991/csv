@@ -22,11 +22,11 @@ var gModel: MLModel!
 //let sbArr = ["CYBERUSDT", "SEIUSDT", "UNFIUSDT", "API3USDT", "STXUSDT", "PENDLEUSDT", "ARKMUSDT", "ZENUSDT", "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-//let sbArr = ["TOMOUSDT"]
-let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
+let sbArr = ["LQTYUSDT"]
+//let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
-let itArr = ["30m"]
-let pathArr = ["30m"]
+let itArr = ["15m"]
+let pathArr = ["15m"]
 //let itArr = ["15m","30m","1h"]
 //let pathArr = ["15m","30m","1h"]
 
@@ -35,6 +35,7 @@ var modelIdx = 0
 var modelName = ""
 let rootPath = "6-30-8-3"
 //let rootPath = "all"
+let csvHeader = "rank,upDownMa23,volatility,sharp,signal,result\n"
 
 class CoreViewController {
     
@@ -73,7 +74,7 @@ class CoreViewController {
         let url = home + sbName + "_" + itName + "_\(pathName).csv"
         csvUrl = URL(fileURLWithPath:url)
 //        try? "iRank,minRate,maxRate,volatility,sharp,signal,minR,maxR,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
-        try? "rank,minR,maxR,minDiffR,maxDiffR,topRank,result\n".write(to: csvUrl, atomically: true, encoding: .utf8)
+        try? csvHeader.write(to: csvUrl, atomically: true, encoding: .utf8)
     }
     
     func readCsvFiles() {
@@ -105,6 +106,9 @@ class CoreViewController {
                     let midIdx = idx-limit+1
                     let midRow = rows[midIdx]
                     let fcurrent = midRow["current"]?.doubleValue() ?? 0
+                    let volatility = midRow["volatility"]?.doubleValue() ?? 0
+                    let sharp = midRow["sharp"]?.doubleValue() ?? 0
+                    let signal = midRow["signal"]?.doubleValue() ?? 0
                     if fcurrent == 0 {
                         continue
                     }
@@ -123,18 +127,20 @@ class CoreViewController {
                             (dic["current"] ?? "").doubleValue()
                         }
  
-                        let tag = featureStatus6(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
-                        let newRow = "\(tag.0.fmt(x: 3)),\(tag.1.fmt(x: 3)),\(tag.2.fmt(x: 3)),\(tag.3.fmt(x: 3)),\(tag.4.fmt(x: 3)),\(tag.5.fmt(x: 3)),\(tag.6)\n"
+                        let tag = MengZhiHong(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
+                        let newRow = "\(tag.0.fmt(x: 3)),\(tag.1),\(volatility.fmt(x: 3)),\(sharp.fmt(x: 3)),\(signal.fmt(x: 3)),\(tag.2)\n"
 //
                         addContent(text: newRow)
 
-                        if tag.6 == "long" {
+                        let flg = tag.2
+                        
+                        if flg == "long" {
                             lc += 1
-                        }else if tag.6 == "short" {
+                        }else if flg == "short" {
                             sc += 1
-                        }else if tag.6 == "LN" {
+                        }else if flg == "LN" {
                             lnc += 1
-                        }else if tag.6 == "SN" {
+                        }else if flg == "SN" {
                             snc += 1
                         }
                     }
@@ -433,6 +439,55 @@ class CoreViewController {
        
         return (0,0,0,0,0,0,"LN")
     }
+    
+    func MengZhiHong(current: Double,backPrices: [Double],forePrices: [Double]) ->(Double,String,String) {
+        let r = 0.0125*2
+        
+        let minX = forePrices.min() ?? 0
+        let maxX = forePrices.max() ?? 0
+        
+        let cc = backPrices.count-1
+        
+        var rank: Double = -1
+        var fu = backPrices
+        fu.append(current)
+        fu.sort()
+        if let idx = fu.firstIndex(of: current) {
+            rank = Double(idx)/Double(fu.count)
+        }
+        
+        let ma25 = getAvg(Array(backPrices[cc-450...cc]))
+        let upDownMa25 = current >= ma25 ? "up" : "down"
+
+        if current >= maxX && current >= minX  {
+            if (current - minX)/minX >= r {
+                return (rank,upDownMa25,"short")
+            }
+            return (rank,upDownMa25,"SN")
+        }else if current <= maxX && current >= minX  {
+            let sub1 = fabs(maxX - current)
+            let sub2 = fabs(minX - current)
+            if sub1 > sub2 {
+                if (maxX - current)/current >= r {
+                    return (rank,upDownMa25,"long")
+                }
+                 return (rank,upDownMa25,"LN")
+            }else{
+                if (current - minX)/minX >= r {
+                    return (rank,upDownMa25,"short")
+                }
+                return (rank,upDownMa25,"SN")
+            }
+        }else if current <= maxX && current <= minX  {
+            if (maxX - current)/current >= r {
+                return (rank,upDownMa25,"long")
+            }
+            return (rank,upDownMa25,"LN")
+        }
+       
+        return (0,"","LN")
+    }
+
 
     
 }
