@@ -20,10 +20,11 @@ var gModel: MLModel!
 //let sbArr = ["IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 
 //let sbArr = ["CYBERUSDT", "SEIUSDT", "UNFIUSDT", "API3USDT", "STXUSDT", "PENDLEUSDT", "ARKMUSDT", "ZENUSDT", "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
+//let sbArr = [ "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-let sbArr = ["LQTYUSDT"]
-//let sbArr = ["TOMOUSDT","ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
+//let sbArr = ["LQTYUSDT"]
+let sbArr = ["ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
 let itArr = ["15m"]
 let pathArr = ["15m"]
@@ -457,7 +458,7 @@ class CoreViewController {
         }
         
         let ma25 = getAvg(Array(backPrices[cc-450...cc]))
-        let upDownMa25 = current >= ma25 ? "up" : "down"
+        let upDownMa25 = current >= ma25 ? "1" : "0"
 
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
