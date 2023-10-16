@@ -22,11 +22,31 @@ var errorLong = 0
 var errorShort = 0
 //let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/ALPHAUSDT_30m_30m.csv"
 //let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/WOOUSDT_30m_30m_processed.csv"
-let csvTestPath = "/Users/xuanyuan/Documents/csv-t/API3USDT_15m_15m_ls.csv"
+let testFileArr = ["API3USDT_15m_15m_ls.csv",
+                  "ARKMUSDT_15m_15m_ls.csv",
+                   "BCHUSDT_15m_15m_ls.csv",
+                   "COMBOUSDT_15m_15m_ls.csv",
+                   "CYBERUSDT_15m_15m_ls.csv",
+                   "GTCUSDT_15m_15m_ls.csv",
+                   "MAVUSDT_15m_15m_ls.csv",
+                   "OGNUSDT_15m_15m_ls.csv",
+                   "PENDLEUSDT_15m_15m_ls.csv",
+                   "SEIUSDT_15m_15m_ls.csv",
+                   "SKLUSDT_15m_15m_ls.csv",
+                   "STXUSDT_15m_15m_ls.csv",
+                   "UNFIUSDT_15m_15m_ls.csv",
+                   "WLDUSDT_15m_15m_ls.csv",
+                   "YGGUSDT_15m_15m_ls.csv",
+                   "ZENUSDT_15m_15m_ls.csv",]
+var csvTestPath = "/Users/xuanyuan/Documents/csv-t/ls/"
 let port = 6601
 var d: TimeInterval = 0
 var totalLong = 0
 var totalShort = 0
+var textIdx = 0
+
+var totalLongScore = 0
+var totalShortScore = 0
 
 
 func modelValidation() {
@@ -52,20 +72,6 @@ func modelValidation() {
                        signal
                     ]
             ]
-        
-//        let dic = [
-//                "input":
-//                    [
-//                        iRank,
-//                        minRate,
-//                        maxRate,
-//                        volatility,
-//                        sharp,
-//                        minR,
-//                        maxR,
-//                        signal
-//                    ]
-//            ]
         
         predictLocal3(dic, interval: "3m") { res in
             if result == "long" {
@@ -119,11 +125,12 @@ func nextT() {
         let shortScore = bingoShort-errorShort*2
         debugPrint("long score: \(longScore)")
         debugPrint("short score: \(shortScore)")
+        totalLongScore += longScore
+        totalShortScore += shortScore
 
         let sub = Date().timeIntervalSince1970 - d
         debugPrint("time=\(sub)")
-        exit(0)
-        return
+        nextF()
     }
     
     DispatchQueue.global().asyncAfter(deadline: .now()+0.00001) {
@@ -132,10 +139,31 @@ func nextT() {
     
 }
 
+func nextF() {
+    textIdx += 1
+    if textIdx >= testFileArr.count {
+        debugPrint("----finished---")
+        debugPrint("total long score: \(totalLongScore)")
+        debugPrint("total short score: \(totalShortScore)")
+        exit(0)
+    }
+     csvIndex = 0
+     allCount = 0
+     bingoLong = 0
+     bingoShort = 0
+     bingoLN = 0
+     bingoSN = 0
+     errorLong = 0
+     errorShort = 0
+    
+    loadCSV()
+}
+
 func loadCSV() {
     
     do {
-        let path = csvTestPath
+        let name = testFileArr[textIdx]
+        let path = csvTestPath + name
         print(path)
         
         let csvFileUrl = URL(fileURLWithPath: path)
