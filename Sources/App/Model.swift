@@ -22,7 +22,7 @@ var errorLong = 0
 var errorShort = 0
 //let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/ALPHAUSDT_30m_30m.csv"
 //let csvTestPath = "/Users/xuanyuan/Documents/8-17-30m/WOOUSDT_30m_30m_processed.csv"
-let csvTestPath = "/Users/xuanyuan/py/merged_csv-t.csv"
+let csvTestPath = "/Users/xuanyuan/Documents/csv-t/API3USDT_15m_15m_ls.csv"
 let port = 6601
 var d: TimeInterval = 0
 var totalLong = 0
@@ -34,36 +34,22 @@ func modelValidation() {
     if let midRow = csvArrs?.rows[csvIndex] {
 
         let rank = midRow["rank"]?.doubleValue() ?? 0
-        let minR = midRow["minR"]?.doubleValue() ?? 0
-        let maxR = midRow["maxR"]?.doubleValue() ?? 0
-        let minDiffR = midRow["minDiffR"]?.doubleValue() ?? 0
-        let maxDiffR = midRow["maxDiffR"]?.doubleValue() ?? 0
-        let topRank = midRow["topRank"]?.doubleValue() ?? 0
+        let upDownMa23 = midRow["upDownMa23"]?.doubleValue() ?? 0
+        let volatility = midRow["volatility"]?.doubleValue() ?? 0
+        let sharp = midRow["sharp"]?.doubleValue() ?? 0
+        let signal = midRow["signal"]?.doubleValue() ?? 0
         let result = midRow["result"] ?? ""
         
-//        if result == "LN" || result == "SN" {
-//            nextT()
-//            return
-//        }
-        
-//        debugPrint(iRank)
-//        debugPrint(minRate)
-//        debugPrint(maxRate)
-//        debugPrint(volatility)
-//        debugPrint(sharp)
-//        debugPrint(signal)
-//        debugPrint(result)
+
         
         let dic = [
                 "input":
                     [
                        rank,
-                       minR,
-                       maxR,
-                       minDiffR,
-                       maxDiffR,
-                       topRank
-             
+                       upDownMa23,
+                       volatility,
+                       sharp,
+                       signal
                     ]
             ]
         
@@ -175,7 +161,7 @@ func predictLocal3(_ dic: any Content,interval: String,callback: SKCallback?) {
         let response = try kApp.client.post("http://127.0.0.1:\(port)/predict") { req in
             try req.content.encode(dic)
         }.wait()
-       debugPrint(response)
+//       debugPrint(response)
         if response.status == .ok {
             // 解码并打印响应
             let prediction = try response.content.decode([String].self)
