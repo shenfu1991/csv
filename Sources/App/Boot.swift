@@ -22,8 +22,8 @@ var gModel: MLModel!
 //let sbArr = ["CYBERUSDT", "SEIUSDT", "UNFIUSDT", "API3USDT", "STXUSDT", "PENDLEUSDT", "ARKMUSDT", "ZENUSDT", "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 //let sbArr = [ "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 
-let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-//let sbArr = ["LQTYUSDT"]
+//let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+let sbArr = ["RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
 let itArr = ["15m"]
@@ -205,8 +205,6 @@ class CoreViewController {
         let maxX = forePrices.max() ?? 0
         
         let arr14 = assArr4mins(arr: backPrices, leng: 14)
-//        let arr12 = assArr4mins(arr: backPrices, leng: 12)
-//        let arr9 = assArr4mins(arr: backPrices, leng: 9)
         
         let hs = assArr4mins(arr: highs, leng: 14)
         let ls = assArr4mins(arr: lows, leng: 14)
