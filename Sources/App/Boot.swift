@@ -107,9 +107,9 @@ class CoreViewController {
                     let midIdx = idx-limit+1
                     let midRow = rows[midIdx]
                     let fcurrent = midRow["current"]?.doubleValue() ?? 0
-                    let volatility = midRow["volatility"]?.doubleValue() ?? 0
-                    let sharp = midRow["sharp"]?.doubleValue() ?? 0
-                    let signal = midRow["signal"]?.doubleValue() ?? 0
+//                    let volatility = midRow["volatility"]?.doubleValue() ?? 0
+//                    let sharp = midRow["sharp"]?.doubleValue() ?? 0
+//                    let signal = midRow["signal"]?.doubleValue() ?? 0
                     if fcurrent == 0 {
                         continue
                     }
