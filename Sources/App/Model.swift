@@ -29,15 +29,16 @@ let testFileArr = ["API3USDT_15m_15m_ls.csv",
                    "CYBERUSDT_15m_15m_ls.csv",
                    "GTCUSDT_15m_15m_ls.csv",
                    "MAVUSDT_15m_15m_ls.csv",
-                   "OGNUSDT_15m_15m_ls.csv",
-                   "PENDLEUSDT_15m_15m_ls.csv",
-                   "SEIUSDT_15m_15m_ls.csv",
-                   "SKLUSDT_15m_15m_ls.csv",
-                   "STXUSDT_15m_15m_ls.csv",
-                   "UNFIUSDT_15m_15m_ls.csv",
-                   "WLDUSDT_15m_15m_ls.csv",
-                   "YGGUSDT_15m_15m_ls.csv",
+//                   "OGNUSDT_15m_15m_ls.csv",
+//                   "PENDLEUSDT_15m_15m_ls.csv",
+//                   "SEIUSDT_15m_15m_ls.csv",
+//                   "SKLUSDT_15m_15m_ls.csv",
+//                   "STXUSDT_15m_15m_ls.csv",
+//                   "UNFIUSDT_15m_15m_ls.csv",
+//                   "WLDUSDT_15m_15m_ls.csv",
+//                   "YGGUSDT_15m_15m_ls.csv",
                    "ZENUSDT_15m_15m_ls.csv",]
+//let testFileArr = ["BCHUSDT_15m_15m_ls.csv"]
 var csvTestPath = "/Users/xuanyuan/Documents/csv-t/ls/"
 let port = 6601
 var d: TimeInterval = 0
@@ -53,23 +54,23 @@ func modelValidation() {
     
     if let midRow = csvArrs?.rows[csvIndex] {
 
-        let rank = midRow["rank"]?.doubleValue() ?? 0
-        let upDownMa23 = midRow["upDownMa23"]?.doubleValue() ?? 0
+//        let rank = midRow["rank"]?.doubleValue() ?? 0
+//        let upDownMa23 = midRow["upDownMa23"]?.doubleValue() ?? 0
         let volatility = midRow["volatility"]?.doubleValue() ?? 0
         let sharp = midRow["sharp"]?.doubleValue() ?? 0
         let signal = midRow["signal"]?.doubleValue() ?? 0
         let result = midRow["result"] ?? ""
-        
 
         
         let dic = [
                 "input":
                     [
-                       rank,
-                       upDownMa23,
+//                       rank,
+//                       upDownMa23,
                        volatility,
                        sharp,
-                       signal
+                       signal,
+//                       interactionTerm
                     ]
             ]
         
@@ -99,6 +100,9 @@ func modelValidation() {
             }
             nextT()
         }
+    }else {
+        debugPrint("read files error")
+//        nextF()
     }
     
 }
@@ -109,15 +113,15 @@ func nextT() {
         debugPrint("----all finished----")
         let longRate = Double(bingoLong)/Double(totalLong)
         let shortRate = Double(bingoShort)/Double(totalShort)
-        let LNRate = Double(bingoLN)/Double(allCount)
-        let SNRate = Double(bingoSN)/Double(allCount)
+//        let LNRate = Double(bingoLN)/Double(allCount)
+//        let SNRate = Double(bingoSN)/Double(allCount)
         let eLongRate = Double(errorLong)/Double(allCount)
         let eShortRate = Double(errorShort)/Double(allCount)
 
         debugPrint("long rate: \(bingoLong)/\(totalLong)     R:\(longRate)")
         debugPrint("short rate: \(bingoShort)/\(totalShort)   R:\(shortRate)")
-        debugPrint("LN rate: \(bingoLN)       R:\(LNRate)")
-        debugPrint("SN rate: \(bingoSN)    R:\(SNRate)")
+//        debugPrint("LN rate: \(bingoLN)       R:\(LNRate)")
+//        debugPrint("SN rate: \(bingoSN)    R:\(SNRate)")
         debugPrint("eLongRate rate: \(errorLong)        R:\(eLongRate)")
         debugPrint("eShortRate rate: \(errorShort)     R:\(eShortRate)")
         
@@ -131,6 +135,7 @@ func nextT() {
         let sub = Date().timeIntervalSince1970 - d
         debugPrint("time=\(sub)")
         nextF()
+        return
     }
     
     DispatchQueue.global().asyncAfter(deadline: .now()+0.00001) {
@@ -172,7 +177,9 @@ func loadCSV() {
         
         // 获取所有行
         csvArrs = csvFile
-        d = Date().timeIntervalSince1970
+        if textIdx == 0 {
+            d = Date().timeIntervalSince1970
+        }
         allCount = csvArrs?.rows.count ?? 0
         debugPrint("total: \(allCount)")
         
@@ -200,7 +207,7 @@ func predictLocal3(_ dic: any Content,interval: String,callback: SKCallback?) {
             }
 //            print(res)
         } else {
-//            print("Error: \(response.status)")
+            print("Error: \(response.status)")
             if let ss = callback {
                 ss("\(response.status)")
             }

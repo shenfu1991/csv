@@ -22,9 +22,9 @@ var gModel: MLModel!
 //let sbArr = ["CYBERUSDT", "SEIUSDT", "UNFIUSDT", "API3USDT", "STXUSDT", "PENDLEUSDT", "ARKMUSDT", "ZENUSDT", "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 //let sbArr = [ "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 
-//let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["LQTYUSDT"]
-let sbArr = ["ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
+//let sbArr = ["ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
 let itArr = ["15m"]
 let pathArr = ["15m"]
@@ -36,7 +36,7 @@ var modelIdx = 0
 var modelName = ""
 let rootPath = "6-30-8-3"
 //let rootPath = "all"
-let csvHeader = "rank,upDownMa23,volatility,sharp,signal,result\n"
+let csvHeader = "rsi,so,mfi,cci,result\n"
 
 class CoreViewController {
     
@@ -95,7 +95,7 @@ class CoreViewController {
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
-            let backLimit = 900
+            let backLimit = 2100
             var lc = 0
             var sc = 0
             var lnc = 0
@@ -127,13 +127,23 @@ class CoreViewController {
                         let backPrices = backArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
                         }
+                        let highs = backArr.map { dic in
+                            (dic["high"] ?? "").doubleValue()
+                        }
+                        let lows = backArr.map { dic in
+                            (dic["low"] ?? "").doubleValue()
+                        }
+                        let vols = backArr.map { dic in
+                            (dic["volume"] ?? "").doubleValue()
+                        }
  
-                        let tag = MengZhiHong(current: fcurrent, backPrices: backPrices, forePrices: foreCurrents)
-                        let newRow = "\(tag.0.fmt(x: 3)),\(tag.1),\(volatility.fmt(x: 3)),\(sharp.fmt(x: 3)),\(signal.fmt(x: 3)),\(tag.2)\n"
+                        let tag = shenfu(current: fcurrent, highs: highs, lows: lows, closes: backPrices, volumes: vols, backPrices: backPrices, forePrices: foreCurrents)
+                        
+                        let newRow = "\(tag.0.fmt(x: 3)),\(tag.1.fmt(x: 3)),\(tag.2.fmt(x: 3)),\(tag.3.fmt(x: 3)),\(tag.4)\n"
 //
                         addContent(text: newRow)
 
-                        let flg = tag.2
+                        let flg = tag.4
                         
                         if flg == "long" {
                             lc += 1
@@ -173,322 +183,75 @@ class CoreViewController {
             
         }
     }
-    
-    func getTag(current: Double,values: [Double],prePrices: [Double]) ->(String,Double,Double,Double) {
-        let r = 0.0125*2
-        
-        let minX = values.min() ?? 0
-        let maxX = values.max() ?? 0
- 
-        
-        let minX2 = prePrices.min() ?? 0
-        let maxX2 = prePrices.max() ?? 0
-        
-        var iR: Double = -1
-        var fu = prePrices
-        fu.append(current)
-        fu.sort()
-        
-        if let idx = fu.firstIndex(of: current) {
-            iR = Double(idx)/Double(fu.count)
-        }
-        
-        let minRate = minX2/current
-        let maxRate = maxX2/current
-        
-        if current >= maxX && current >= minX  {
-            if (current - minX)/minX >= r {
-                return ("long",minRate,maxRate,iR)
-            }
-            return ("LN",minRate,maxRate,iR)
-        }else if current <= maxX && current >= minX  {
-            let sub1 = fabs(maxX - current)
-            let sub2 = fabs(minX - current)
-            if sub1 > sub2 {
-                if (maxX - current)/current >= r {
-                    return ("long",minRate,maxRate,iR)
-                }
-                return ("LN",minRate,maxRate,iR)
-            }else{
-                if (current - minX)/minX >= r {
-                    return ("short",minRate,maxRate,iR)
-                }
-                return ("SN",minRate,maxRate,iR)
-            }
-        }else if current <= maxX && current <= minX  {
-            if (maxX - current)/current >= r {
-                return ("short",minRate,maxRate,iR)
-            }
-            return ("SN",minRate,maxRate,iR)
-        }
-        
-        return ("",0,0,-1)
-    }
-    
-    func getTag2(current: Double,prePrices: [Double]) ->(String,Double,Double,Double) {
-        let r = 0.0125*2
 
-        let minX = prePrices.min() ?? 0
-        let maxX = prePrices.max() ?? 0
-        
-        var iR: Double = -1
-        var fu = prePrices
-        fu.append(current)
-        fu.sort()
-        
-        if let idx = fu.firstIndex(of: current) {
-            iR = Double(idx)/Double(fu.count)
+    func assArr4mins(arr: [Double],leng: Int,mins: Int = 5) ->[Double] {
+        let cc = arr.count-1
+        var finalArr: [Double] = []
+        for i in 0...leng-1 {
+            let count = 30*mins
+            let from = cc-count*(i+1)+1
+            let to = cc-count*i
+//            debugPrint("from = \(from),to=\(to)")
+            let avg = getAvg(Array(arr[from...to]))
+            finalArr.append(avg)
         }
-        
-        let minRate = minX/current
-        let maxRate = maxX/current
-        
-        if current >= maxX && current >= minX  {
-            if (current - minX)/minX >= r {
-                return ("long",minRate,maxRate,iR)
-            }
-            return ("LN",minRate,maxRate,iR)
-        }else if current <= maxX && current >= minX  {
-            let sub1 = fabs(maxX - current)
-            let sub2 = fabs(minX - current)
-            if sub1 > sub2 {
-                if (maxX - current)/current >= r {
-                    return ("long",minRate,maxRate,iR)
-                }
-                return ("LN",minRate,maxRate,iR)
-            }else{
-                if (current - minX)/minX >= r {
-                    return ("short",minRate,maxRate,iR)
-                }
-                return ("SN",minRate,maxRate,iR)
-            }
-        }else if current <= maxX && current <= minX  {
-            if (maxX - current)/current >= r {
-                return ("short",minRate,maxRate,iR)
-            }
-            return ("SN",minRate,maxRate,iR)
-        }
-        
-        return ("",0,0,-1)
+        return finalArr
     }
-    
-    func getTag3(current: Double,backPrices: [Double],forePrices: [Double]) ->(String,Double,Double,Double,Double,Double) {
-        let r = 0.0125*2
 
-        let minX = backPrices.min() ?? 0
-        let maxX = backPrices.max() ?? 0
-        
-        let sub1 = fabs(maxX - current)
-        let sub2 = fabs(minX - current)
-        
-        var iR: Double = -1
-        var fu = backPrices
-        fu.append(current)
-        fu.sort()
-        
-        if let idx = fu.firstIndex(of: current) {
-            iR = Double(idx)/Double(fu.count)
-        }
-        
-        let minRate = minX/current
-        let maxRate = maxX/current
-        
-        let minR = (current - minX)/minX
-        let maxR = (current - maxX)/maxX
-
-        if current >= maxX && current >= minX  {
-            if (current - minX)/minX >= r {
-                let tag = featureStatus(current: current, forePrices: forePrices)
-                if tag == "long" {
-                    return ("long",minRate,maxRate,iR,minR,maxR)
-                }
-                return ("LN",minRate,maxRate,iR,minR,maxR)
-            }
-            return ("LN",minRate,maxRate,iR,minR,maxR)
-        }else if current <= maxX && current >= minX  {
-            if sub1 > sub2 {
-                if (maxX - current)/current >= r {
-                    let tag = featureStatus(current: current, forePrices: forePrices)
-                    if tag == "long" {
-                        return ("long",minRate,maxRate,iR,minR,maxR)
-                    }
-                    return ("LN",minRate,maxRate,iR,minR,maxR)
-                }
-                return ("LN",minRate,maxRate,iR,minR,maxR)
-            }else{
-                if (current - minX)/minX >= r {
-                    let tag = featureStatus(current: current, forePrices: forePrices)
-                    if tag == "short" {
-                        return ("short",minRate,maxRate,iR,minR,maxR)
-                    }
-                    return ("SN",minRate,maxRate,iR,minR,maxR)
-                }
-                return ("SN",minRate,maxRate,iR,minR,maxR)
-            }
-        }else if current <= maxX && current <= minX  {
-            if (maxX - current)/current >= r {
-                let tag = featureStatus(current: current, forePrices: forePrices)
-                if tag == "short" {
-                    return ("short",minRate,maxRate,iR,minR,maxR)
-                }
-                return ("SN",minRate,maxRate,iR,minR,maxR)
-            }
-            return ("SN",minRate,maxRate,iR,minR,maxR)
-        }
-        
-        return ("",0,0,-1,0,0)
-    }
-    
-    func featureStatus(current: Double,forePrices: [Double]) ->String {
-        let r = 0.0125*2
-
-        let minX = forePrices.min() ?? 0
-        let maxX = forePrices.max() ?? 0
-        
-        if current >= maxX && current >= minX  {
-            if (current - minX)/minX >= r {
-                return ("long")
-            }
-            return ("LN")
-        }else if current <= maxX && current >= minX  {
-            let sub1 = fabs(maxX - current)
-            let sub2 = fabs(minX - current)
-            if sub1 > sub2 {
-                if (maxX - current)/current >= r {
-                    return ("long")
-                }
-                return ("LN")
-            }else{
-                if (current - minX)/minX >= r {
-                    return ("short")
-                }
-                return ("SN")
-            }
-        }else if current <= maxX && current <= minX  {
-            if (maxX - current)/current >= r {
-                return ("short")
-            }
-            return ("SN")
-        }
-        
-        return ""
-    }
-    
-    
-//    "rank,minR,maxR,minDiffR,maxDiffR,topRank,result\n
-    
-    func featureStatus6(current: Double,backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,Double,Double,String) {
+    func shenfu(current: Double,highs: [Double],lows: [Double],closes: [Double],volumes: [Double],backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,String) {
         let r = 0.0125*2
         
         let minX = forePrices.min() ?? 0
         let maxX = forePrices.max() ?? 0
         
-        let cc = backPrices.count-1
+        let arr14 = assArr4mins(arr: backPrices, leng: 14)
+//        let arr12 = assArr4mins(arr: backPrices, leng: 12)
+//        let arr9 = assArr4mins(arr: backPrices, leng: 9)
         
-        var rank: Double = -1
-        var fu = backPrices
-        fu.append(current)
-        fu.sort()
-        if let idx = fu.firstIndex(of: current) {
-            rank = Double(idx)/Double(fu.count)
-        }
+        let hs = assArr4mins(arr: highs, leng: 14)
+        let ls = assArr4mins(arr: lows, leng: 14)
+        let cs = assArr4mins(arr: closes, leng: 14)
+        let vs = assArr4mins(arr: volumes, leng: 14)
         
-        let backMin = backPrices.min() ?? 0
-        let backMax = backPrices.max() ?? 0
-        let minR = backMin/current
-        let maxR = backMax/current
-        
-        let minDiffR = (backMin-current)/current
-        let maxDiffR = (backMax-current)/current
-        
-        let topIdx = Int(Double(cc)*0.25)
-        let topArr = Array(backPrices[cc-topIdx...cc])
-        
-        var topRank: Double = -1
-        var fu2 = topArr
-        fu2.append(current)
-        fu2.sort()
-        if let idx = fu2.firstIndex(of: current) {
-            topRank = Double(idx)/Double(fu2.count)
-        }
+        let hs9 = assArr4mins(arr: highs, leng: 9)
+        let ls9 = assArr4mins(arr: lows, leng: 9)
+        let cs9 = assArr4mins(arr: closes, leng: 9)
 
+        let rsi = calculateRSI(values: arr14).last ?? 0
+        let mfi = calculateMFI(highs: hs, lows: ls, closes: cs, volumes: vs).last ?? 0
+        let cci = calculateCCI(highs: hs9, lows: ls9, closes: cs9).last ?? 0
+        let so = calculateStochasticOscillator(highs: hs, lows: ls, closes: cs).last ?? 0
+        
+//        rsi,so,mfi,cci,
+        
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
-                return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"long")
+                return (rsi,so,mfi,cci,"short")
             }
-            return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"LN")
+            return (rsi,so,mfi,cci,"SN")
         }else if current <= maxX && current >= minX  {
             let sub1 = fabs(maxX - current)
             let sub2 = fabs(minX - current)
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
-                    return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"long")
+                    return (rsi,so,mfi,cci,"long")
                 }
-                return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"LN")
+                 return (rsi,so,mfi,cci,"LN")
             }else{
                 if (current - minX)/minX >= r {
-                    return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"short")
+                    return (rsi,so,mfi,cci,"short")
                 }
-                return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"SN")
+                return (rsi,so,mfi,cci,"SN")
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
-               return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"short")
+                return (rsi,so,mfi,cci,"long")
             }
-            return (rank,minR,maxR,minDiffR,maxDiffR,topRank,"SN")
+            return (rsi,so,mfi,cci,"LN")
         }
        
-        return (0,0,0,0,0,0,"LN")
+        return (0,0,0,0,"LN")
     }
-    
-    func MengZhiHong(current: Double,backPrices: [Double],forePrices: [Double]) ->(Double,String,String) {
-        let r = 0.0125*2
-        
-        let minX = forePrices.min() ?? 0
-        let maxX = forePrices.max() ?? 0
-        
-        let cc = backPrices.count-1
-        
-        var rank: Double = -1
-        var fu = backPrices
-        fu.append(current)
-        fu.sort()
-        if let idx = fu.firstIndex(of: current) {
-            rank = Double(idx)/Double(fu.count)
-        }
-        
-        let ma25 = getAvg(Array(backPrices[cc-450...cc]))
-        let upDownMa25 = current >= ma25 ? "1" : "0"
-
-        if current >= maxX && current >= minX  {
-            if (current - minX)/minX >= r {
-                return (rank,upDownMa25,"short")
-            }
-            return (rank,upDownMa25,"SN")
-        }else if current <= maxX && current >= minX  {
-            let sub1 = fabs(maxX - current)
-            let sub2 = fabs(minX - current)
-            if sub1 > sub2 {
-                if (maxX - current)/current >= r {
-                    return (rank,upDownMa25,"long")
-                }
-                 return (rank,upDownMa25,"LN")
-            }else{
-                if (current - minX)/minX >= r {
-                    return (rank,upDownMa25,"short")
-                }
-                return (rank,upDownMa25,"SN")
-            }
-        }else if current <= maxX && current <= minX  {
-            if (maxX - current)/current >= r {
-                return (rank,upDownMa25,"long")
-            }
-            return (rank,upDownMa25,"LN")
-        }
-       
-        return (0,"","LN")
-    }
-
 
     
 }
