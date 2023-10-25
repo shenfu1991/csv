@@ -106,4 +106,81 @@ func calculateCCI(highs: [Double], lows: [Double], closes: [Double], period: Int
     return ccis
 }
 
+// 计算唐奇安通道
+func calculateDonchianChannel(prices: [Double], window: Int) -> (upperBand: [Double], lowerBand: [Double]) {
+    var upperBand: [Double] = []
+    var lowerBand: [Double] = []
+    
+    // 确保数据量大于时间窗口
+    guard prices.count >= window else {
+        return (upperBand, lowerBand)
+    }
+    
+    for i in 0..<prices.count {
+        if i < window - 1 {
+            // 不足窗口大小的数据，无法计算唐奇安通道
+            upperBand.append(0)
+            lowerBand.append(0)
+            continue
+        }
+        
+        let slice = Array(prices[(i - window + 1)...i])
+        if let maxPrice = slice.max(), let minPrice = slice.min() {
+            upperBand.append(maxPrice)
+            lowerBand.append(minPrice)
+        } else {
+            upperBand.append(0)
+            lowerBand.append(0)
+        }
+    }
+    
+    return (upperBand, lowerBand)
+}
+
+import Foundation
+
+func calculateDMI(highs: [Double], lows: [Double], closes: [Double], period: Int) -> ([Double], [Double], [Double]) {
+    var plusDMs: [Double] = []
+    var minusDMs: [Double] = []
+    var trueRanges: [Double] = []
+    var plusDIs: [Double] = []
+    var minusDIs: [Double] = []
+    var adxs: [Double] = []
+
+    for i in 1..<highs.count {
+        let deltaHigh = highs[i] - highs[i - 1]
+        let deltaLow = lows[i - 1] - lows[i]
+        
+        let plusDM = max(deltaHigh, 0)
+        let minusDM = max(deltaLow, 0)
+        
+        plusDMs.append((deltaHigh > deltaLow && deltaHigh > 0) ? deltaHigh : 0)
+        minusDMs.append((deltaLow > deltaHigh && deltaLow > 0) ? deltaLow : 0)
+        
+        let trueRange = max(highs[i] - lows[i], abs(highs[i] - closes[i - 1]), abs(lows[i] - closes[i - 1]))
+        trueRanges.append(trueRange)
+    }
+
+    for i in (period - 1)..<(highs.count - 1) {
+        let plusDMPeriod = plusDMs[i - period + 1...i].reduce(0, +)
+        let minusDMPeriod = minusDMs[i - period + 1...i].reduce(0, +)
+        let trueRangePeriod = trueRanges[i - period + 1...i].reduce(0, +)
+
+        let plusDI = 100 * (plusDMPeriod / trueRangePeriod)
+        let minusDI = 100 * (minusDMPeriod / trueRangePeriod)
+
+        plusDIs.append(plusDI)
+        minusDIs.append(minusDI)
+
+        let dx = 100 * abs(plusDI - minusDI) / (plusDI + minusDI)
+        if i >= (2 * period) - 2 {
+            let adx = Array(adxs.suffix(period - 1)).compactMap { $0 }.reduce(dx, +) / Double(period)
+            adxs.append(adx)
+        } else {
+            adxs.append(-100)
+        }
+    }
+
+    return (plusDIs, minusDIs, adxs)
+}
 

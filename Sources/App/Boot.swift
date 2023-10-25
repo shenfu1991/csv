@@ -23,11 +23,11 @@ var gModel: MLModel!
 //let sbArr = [ "MAVUSDT", "WLDUSDT", "SKLUSDT", "BCHUSDT", "GTCUSDT", "YGGUSDT", "COMBOUSDT", "OGNUSDT","AMBUSDT","LITUSDT","ARPAUSDT","SSVUSDT"]
 
 //let sbArr = ["TOMOUSDT","ALPHAUSDT","NKNUSDT","RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-let sbArr = ["RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
-//let sbArr = ["ALPHAUSDT","RSRUSDT","GRTUSDT","IMXUSDT","MAGICUSDT","RDNTUSDT"]
+//let sbArr = ["RSRUSDT","GRTUSDT","HIGHUSDT","IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
+let sbArr = ["IMXUSDT","LPTUSDT","LQTYUSDT","MAGICUSDT","RDNTUSDT","WOOUSDT"]
 //let sbArr = ["IMXUSDT","RDNTUSDT","ALPHAUSDT"]
-let itArr = ["15m"]
-let pathArr = ["15m"]
+let itArr = ["5m","30m"]
+let pathArr = ["5m","30m"]
 //let itArr = ["15m","30m","1h"]
 //let pathArr = ["15m","30m","1h"]
 
@@ -36,14 +36,42 @@ var modelIdx = 0
 var modelName = ""
 let rootPath = "6-30-8-3"
 //let rootPath = "all"
-let csvHeader = "rsi,so,mfi,cci,result\n"
+let csvHeader = "cci,duck,di,adx,result\n"
 
 class CoreViewController {
     
     func configModels() {
         loopTask()
         
-//        loopTest()
+//        testF()
+        
+    }
+    
+    func testF() {
+        let home = "/Users/xuanyuan/Documents/csv/"
+        let url = home + "12.csv"
+        csvUrl = URL(fileURLWithPath:url)
+        try? csvHeader.write(to: csvUrl, atomically: true, encoding: .utf8)
+        
+        
+        for _ in 0...10000 {
+            
+            let rsi = Double.random(in: 0...100)
+            let so = Double.random(in: -100...100)
+            let mfi = Double.random(in: 0...100)
+            let cci = Double.random(in: 100...200)
+            var res = "none"
+            if rsi >= 70 && mfi <= 30 {
+                res = "long"
+            }else if rsi <= 30 && mfi >= 70 {
+                res = "short"
+            }
+            let newRow = "\(rsi.fmt(x: 3)),\(so.fmt(x: 3)),\(mfi.fmt(x: 3)),\(cci.fmt(x: 3)),\(res)\n"
+            addContent(text: newRow)
+        }
+        
+        exit(0)
+        
     }
     
     func loopTask() {
@@ -95,11 +123,10 @@ class CoreViewController {
             
 //            "timestamp,current,open,high,low,rate,volume,volatility,sharp,signal\n"/
             let limit = 1800
-            let backLimit = 2100
+            let backLimit = getMins()*30*40
             var lc = 0
             var sc = 0
-            var lnc = 0
-            var snc = 0
+            var nc = 0
             for (idx,_) in rows.enumerated() {
                 // 使用列名来访问数据
                 
@@ -123,21 +150,14 @@ class CoreViewController {
                         
                         let backIdx = midIdx - backLimit + 1
                         let backArr = rows[(backIdx)...midIdx]
-
                         let backPrices = backArr.map { dic in
                             (dic["current"] ?? "").doubleValue()
-                        }
-                        let highs = backArr.map { dic in
-                            (dic["high"] ?? "").doubleValue()
-                        }
-                        let lows = backArr.map { dic in
-                            (dic["low"] ?? "").doubleValue()
                         }
                         let vols = backArr.map { dic in
                             (dic["volume"] ?? "").doubleValue()
                         }
  
-                        let tag = shenfu(current: fcurrent, highs: highs, lows: lows, closes: backPrices, volumes: vols, backPrices: backPrices, forePrices: foreCurrents)
+                        let tag = shenfu(current: fcurrent, volumes: vols, backPrices: backPrices, forePrices: foreCurrents)
                         
                         let newRow = "\(tag.0.fmt(x: 3)),\(tag.1.fmt(x: 3)),\(tag.2.fmt(x: 3)),\(tag.3.fmt(x: 3)),\(tag.4)\n"
 //
@@ -149,16 +169,14 @@ class CoreViewController {
                             lc += 1
                         }else if flg == "short" {
                             sc += 1
-                        }else if flg == "LN" {
-                            lnc += 1
-                        }else if flg == "SN" {
-                            snc += 1
+                        }else {
+                           nc += 1
                         }
                     }
                 }
             }
             debugPrint("finished")
-            debugPrint(" \(sbName) \(lc),\(lnc),\(sc),\(snc)")
+            debugPrint(" \(sbName) \(lc),\(sc),\(nc)")
             debugPrint("next file...")
             nextFile()
         } catch let error {
@@ -183,72 +201,113 @@ class CoreViewController {
             
         }
     }
+    
+    func getMins() ->Int {
+        var mins = 3
+        if itName == "5m" {
+            mins = 5
+        }else if itName == "15m" {
+            mins = 15
+        }else if itName == "30m" {
+            mins = 30
+        }else if itName == "1h" {
+            mins = 60
+        }else if itName == "4h" {
+            mins = 240
+        }
+        return mins
+    }
 
-    func assArr4mins(arr: [Double],leng: Int,mins: Int = 5) ->[Double] {
+    func assArr4mins(arr: [Double],leng: Int,high: Bool=false,low:Bool=false,close:Bool=false) ->[Double] {
+        
+       let mins = getMins()
+        let d = arr
+        
         let cc = arr.count-1
+        if cc < 13 {
+            return []
+        }
         var finalArr: [Double] = []
         for i in 0...leng-1 {
             let count = 30*mins
             let from = cc-count*(i+1)+1
             let to = cc-count*i
-//            debugPrint("from = \(from),to=\(to)")
-            let avg = getAvg(Array(arr[from...to]))
-            finalArr.append(avg)
+//            debugPrint("i=\(i),cc=\(arr.count)")
+            let tmp = d[from...to]
+            if high {
+                let h = tmp.max() ?? 0
+                finalArr.append(h)
+            }else if low {
+                let l = tmp.min() ?? 0
+                finalArr.append(l)
+            }else if close {
+                let l = tmp.last ?? 0
+                finalArr.append(l)
+            }else{
+                let avg = getAvg(Array(tmp))
+                finalArr.append(avg)
+            }
         }
         return finalArr
     }
 
-    func shenfu(current: Double,highs: [Double],lows: [Double],closes: [Double],volumes: [Double],backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,String) {
+    func shenfu(current: Double,volumes: [Double],backPrices: [Double],forePrices: [Double]) ->(Double,Double,Double,Double,String) {
         let r = 0.0125*2
         
         let minX = forePrices.min() ?? 0
         let maxX = forePrices.max() ?? 0
-        
-        let arr14 = assArr4mins(arr: backPrices, leng: 14)
-        
-        let hs = assArr4mins(arr: highs, leng: 14)
-        let ls = assArr4mins(arr: lows, leng: 14)
-        let cs = assArr4mins(arr: closes, leng: 14)
-        let vs = assArr4mins(arr: volumes, leng: 14)
-        
-        let hs9 = assArr4mins(arr: highs, leng: 9)
-        let ls9 = assArr4mins(arr: lows, leng: 9)
-        let cs9 = assArr4mins(arr: closes, leng: 9)
+        let po = 40
+//        let arr14 = assArr4mins(arr: backPrices, leng: 14)
+        let highs = assArr4mins(arr: backPrices, leng: po,high: true)
+        let lows = assArr4mins(arr: backPrices, leng: po,low: true)
+        let closes = assArr4mins(arr: backPrices, leng: po,close: true)
 
-        let rsi = calculateRSI(values: arr14).last ?? 0
-        let mfi = calculateMFI(highs: hs, lows: ls, closes: cs, volumes: vs).last ?? 0
-        let cci = calculateCCI(highs: hs9, lows: ls9, closes: cs9).last ?? 0
-        let so = calculateStochasticOscillator(highs: hs, lows: ls, closes: cs).last ?? 0
-        
-//        rsi,so,mfi,cci,
+     
+        let cci = calculateCCI(highs: highs, lows: lows, closes: closes).last ?? 0
+        let duckData = calculateDonchianChannel(prices: closes, window: 14)
+        var duck: Double = 0
+        let upperBand = duckData.upperBand.last ?? 0
+        let lowerBand = duckData.lowerBand.last ?? 0
+        if current > upperBand {
+            duck = 1
+        }else if current < lowerBand  {
+            duck = -1
+        }
+        let dmi = calculateDMI(highs: highs, lows: lows, closes: closes, period: 14)
+        let dip = dmi.0.last ?? 0
+        let dim = dmi.1.last ?? 0
+        let di: Double = dip >= dim ? 1 : -1
+        let adx = dmi.2.last ?? 0
+
+//        "cci,duck,di,adx,
         
         if current >= maxX && current >= minX  {
             if (current - minX)/minX >= r {
-                return (rsi,so,mfi,cci,"short")
+                return (cci,duck,di,adx,"short")
             }
-            return (rsi,so,mfi,cci,"SN")
+            return (cci,duck,di,adx,"none")
         }else if current <= maxX && current >= minX  {
             let sub1 = fabs(maxX - current)
             let sub2 = fabs(minX - current)
             if sub1 > sub2 {
                 if (maxX - current)/current >= r {
-                    return (rsi,so,mfi,cci,"long")
+                    return (cci,duck,di,adx,"long")
                 }
-                 return (rsi,so,mfi,cci,"LN")
+                 return (cci,duck,di,adx,"none")
             }else{
                 if (current - minX)/minX >= r {
-                    return (rsi,so,mfi,cci,"short")
+                    return (cci,duck,di,adx,"short")
                 }
-                return (rsi,so,mfi,cci,"SN")
+                return (cci,duck,di,adx,"none")
             }
         }else if current <= maxX && current <= minX  {
             if (maxX - current)/current >= r {
-                return (rsi,so,mfi,cci,"long")
+                return (cci,duck,di,adx,"long")
             }
-            return (rsi,so,mfi,cci,"LN")
+            return (cci,duck,di,adx,"none")
         }
        
-        return (0,0,0,0,"LN")
+        return (0,0,0,0,"none")
     }
 
     

@@ -39,7 +39,7 @@ let testFileArr = ["API3USDT_15m_15m_ls.csv",
 //                   "YGGUSDT_15m_15m_ls.csv",
                    "ZENUSDT_15m_15m_ls.csv",]
 //let testFileArr = ["BCHUSDT_15m_15m_ls.csv"]
-var csvTestPath = "/Users/xuanyuan/Documents/csv-t/ls/"
+var csvTestPath = "/Users/xuanyuan/Documents/csv-sm/ls/"
 let port = 6601
 var d: TimeInterval = 0
 var totalLong = 0
@@ -54,23 +54,25 @@ func modelValidation() {
     
     if let midRow = csvArrs?.rows[csvIndex] {
 
-//        let rank = midRow["rank"]?.doubleValue() ?? 0
-//        let upDownMa23 = midRow["upDownMa23"]?.doubleValue() ?? 0
-        let volatility = midRow["volatility"]?.doubleValue() ?? 0
-        let sharp = midRow["sharp"]?.doubleValue() ?? 0
-        let signal = midRow["signal"]?.doubleValue() ?? 0
+//        "rsi,so,mfi,cci,result\n"
+        let rsi = midRow["rsi"]?.doubleValue() ?? 0
+        let so = midRow["so"]?.doubleValue() ?? 0
+        let mfi = midRow["mfi"]?.doubleValue() ?? 0
+        let cci = midRow["cci"]?.doubleValue() ?? 0
         let result = midRow["result"] ?? ""
+//        let rsi_so = rsi*so
+//        let mfi_cci = mfi*cci
 
         
         let dic = [
                 "input":
                     [
-//                       rank,
-//                       upDownMa23,
-                       volatility,
-                       sharp,
-                       signal,
-//                       interactionTerm
+                       rsi,
+                       so,
+                       mfi,
+                       cci,
+//                       rsi_so,
+//                       mfi_cci
                     ]
             ]
         
